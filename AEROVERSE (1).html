@@ -1,0 +1,719 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>AEROVERSE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="AEROVERSE is a cinematic aviation documentary platform: ten chapters, an aircraft explorer, interactive lessons and verified sources.">
+<meta name="theme-color" content="#04060c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,300..800&family=Figtree:wght@300;400;500;600&display=swap">
+<style>
+/* Small base reset. Replaces the Tailwind runtime script, which compiled styles in the browser and slowed loading. */
+*,::before,::after{border-width:0;border-style:solid;border-color:#e5e7eb}
+:where(h1,h2,h3,h4,h5,h6){font-size:inherit;font-weight:inherit}
+:where(a){color:inherit;text-decoration:inherit}
+:where(button,input,select,textarea){font-family:inherit;font-size:100%;font-weight:inherit;line-height:inherit;margin:0;padding:0}
+:where(button){background-color:transparent;background-image:none}
+:where(ul,ol,menu){list-style:none;margin:0;padding:0}
+:where(figure,blockquote,dl,dd,hr,pre){margin:0}
+:where(img,svg,video,canvas,audio,iframe,embed,object){display:block;vertical-align:middle}
+:where(img,video){height:auto}
+:where(summary){display:list-item}
+:where(table){border-collapse:collapse}
+:where(textarea){resize:vertical}
+::placeholder{opacity:1;color:#9ca3af}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+/* Layout concept: a flight in three acts. A porthole hero (black cabin wall, blue sky, contrail), a runway-style
+   index of ten chapters, then hands-on instruments (explorer, facts, radar). Wide grotesk headlines, blueprint line art. */
+:root {
+  --night: #04060c;
+  --navy: #0a1224;
+  --navy2: #101c36;
+  --blue: #2f7bff;
+  --silver: #c5ccd8;
+  --text: #f4f6fb;
+  --soft: #8d97ab;
+  --line: rgba(197,204,216,.16);
+  --glass: rgba(14,22,42,.6);
+  --good: #5fe0a8; --warn: #ffc15c; --bad: #ff8a9a;
+  --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+html { scroll-behavior: smooth; background: var(--night); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--night); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); overflow-x: hidden; }
+body.lock { overflow: hidden; }
+* { box-sizing: border-box; }
+h1, h2, h3, h4 { font-family: var(--display); font-stretch: 112%; font-weight: 700; letter-spacing: -.02em; line-height: 1.02; margin: 0; text-wrap: balance; }
+p { margin: 0; } a { color: inherit; } button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: 1280px; margin: 0 auto; }
+section { padding-block: clamp(72px, 11vw, 150px); position: relative; }
+.eyebrow { font-size: 13px; color: var(--blue); font-weight: 500; letter-spacing: .04em; }
+.h2 { font-size: clamp(2rem, 5.6vw, 4.6rem); }
+.lede { color: var(--soft); max-width: 56ch; font-size: clamp(1rem, 1.5vw, 1.15rem); }
+.head { display: grid; gap: 14px; margin-bottom: clamp(36px, 5vw, 70px); }
+
+/* loader */
+.loader { position: fixed; inset: 0; z-index: 100; background: var(--night); display: grid; place-content: center; justify-items: center; gap: 18px; animation: lout .4s ease .8s forwards; pointer-events: none; }
+.loader b { font-family: var(--display); font-stretch: 125%; font-weight: 800; letter-spacing: .4em; font-size: 14px; }
+.loader i { display: block; width: 160px; height: 1px; background: var(--line); position: relative; overflow: hidden; }
+.loader i::after { content: ""; position: absolute; inset: 0; background: var(--blue); transform: translateX(-100%); animation: lbar .7s ease forwards; }
+@keyframes lbar { to { transform: none; } } @keyframes lout { to { opacity: 0; visibility: hidden; } }
+
+/* nav */
+.nav { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between;
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px)); transition: background .3s; }
+.nav.solid { background: rgba(4,6,12,.95); border-bottom: 1px solid var(--line); }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-stretch: 125%; font-weight: 800; letter-spacing: .28em; font-size: 14px; }
+.nav ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
+.nav .l { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--silver); text-decoration: none; font-weight: 500; transition: color .2s; background: none; border: 0; padding: 6px 0; }
+.nav .l:hover, .nav .l.on { color: #fff; }
+.mbtn { display: none; border: 1px solid var(--line); background: var(--glass); border-radius: 8px; padding: 8px 14px; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+@media (max-width: 860px) { .nav ul { display: none; } .mbtn { display: block; }
+  .nav.open ul { display: grid; position: fixed; inset: 0; background: var(--night); align-content: center; justify-items: start; gap: 8px; padding: 0 max(28px, env(safe-area-inset-left, 0px)); z-index: -1; }
+  .nav.open .l { font-family: var(--display); font-stretch: 115%; font-size: clamp(1.6rem, 8vw, 2.6rem); font-weight: 700; letter-spacing: -.01em; text-transform: none; } }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-decoration: none; border: 1px solid var(--line); background: var(--glass); transition: transform .25s, background .25s, border-color .25s; }
+.btn:hover { transform: translateY(-2px); border-color: var(--silver); }
+.btn.pri { background: #fff; color: #04060c; border-color: #fff; } .btn.pri:hover { background: var(--silver); }
+.btn.sm { padding: 9px 16px; font-size: 12px; }
+
+/* hero */
+.hero { min-height: 100svh; padding-block: 96px 110px; display: grid; align-items: center; position: relative; overflow: hidden; background: radial-gradient(80% 60% at 50% 40%, #121b30 0, #070b16 60%, var(--night) 100%); }
+.hero .wrap { position: relative; width: 100%; display: grid; grid-template-columns: 1fr; gap: 24px; justify-items: center; }
+.porthole { position: relative; width: min(64vw, 380px); aspect-ratio: 3/4.4; will-change: transform;border-radius: 48% 48% 46% 46% / 34% 34% 24% 24%; overflow: hidden; z-index: 1;
+  border: 14px solid #1b2232; box-shadow: 0 0 0 2px #2c3548, 0 0 0 26px rgba(120,135,165,.08), inset 0 0 40px rgba(0,0,0,.6), 0 60px 120px -30px rgba(47,123,255,.35);
+  background: linear-gradient(180deg, #02050f 0%, #06143a 38%, #1458c8 68%, #9cc7ff 100%); }
+.cloud { position: absolute; left: -40%; width: 90%; height: 18%; border-radius: 50%; background: rgba(235,244,255,.55); filter: blur(14px); will-change: transform; animation: drift 26s linear infinite; }
+.cloud.c1 { bottom: 4%; } .cloud.c2 { bottom: 16%; height: 12%; animation-duration: 38s; animation-delay: -12s; opacity: .6; } .cloud.c3 { bottom: -4%; height: 22%; animation-duration: 20s; animation-delay: -6s; }
+@keyframes drift { from { transform: translateX(0); } to { transform: translateX(240%); } }
+.jet { position: absolute; left: 50%; width: 22px; margin-left: -11px; bottom: 8%; animation: climb 16s ease-in-out infinite; }
+.trail { position: absolute; left: 50%; width: 3px; margin-left: -1.5px; bottom: 8%; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.9)); filter: blur(.4px); transform-origin: bottom; will-change: transform, opacity; animation: trail 16s ease-in-out infinite; height: 380px; transform: scaleY(0); }
+@keyframes climb { 0% { transform: translateY(0); opacity: 0; } 8% { opacity: 1; } 80% { transform: translateY(-330px); opacity: 1; } 92%,100% { transform: translateY(-380px); opacity: 0; } }
+@keyframes trail { 0% { transform: scaleY(0); opacity: 0; } 8% { opacity: 1; } 80% { transform: scaleY(.868); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+.glare { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255,255,255,.14), transparent 30%); pointer-events: none; }
+.hero h1 { font-size: clamp(2.5rem, 9vw, 7.4rem); text-transform: uppercase; font-stretch: 125%; font-weight: 800; letter-spacing: -.035em; line-height: .92; }
+.hero .hl { text-align: center; z-index: 2; }
+.hero h1 .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-right: .26em; } .hero h1 .w:last-child { margin-right: 0; } .hero h1 .w span { display: inline-block; }
+.hero .sub { color: var(--silver); max-width: 46ch; margin: 22px auto 0; font-size: clamp(1rem, 1.6vw, 1.2rem); font-weight: 300; text-align: center; }
+.hero .btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 8px; z-index: 2; }
+@media (min-width: 980px) {
+  .hero .wrap { grid-template-columns: 1fr minmax(300px, 400px) 1fr; align-items: center; gap: 40px; }
+  .hero .hl { grid-column: 1; grid-row: 1; text-align: left; } .hero .hl .sub { margin-left: 0; text-align: left; }
+  .hero .porthole { grid-column: 2; grid-row: 1; width: 100%; } .hero .btns { grid-column: 3; grid-row: 1; flex-direction: column; align-items: flex-start; justify-content: center; }
+  .hero h1 { font-size: clamp(3rem, 5.2vw, 5.6rem); }
+}
+.scrollcue { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--soft); z-index: 2; }
+.scrollcue i { width: 1px; height: 38px; background: linear-gradient(var(--blue), transparent); animation: drip 2.2s ease-in-out infinite; transform-origin: top; }
+@keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* featured */
+.feat { display: grid; gap: 18px; }
+@media (min-width: 900px) { .feat { grid-template-columns: 1.6fr 1fr; grid-template-rows: auto auto; } .feat .big { grid-row: span 2; } }
+.fcard { position: relative; border: 1px solid var(--line); border-radius: 18px; padding: clamp(22px, 3vw, 40px); overflow: hidden; background: linear-gradient(160deg, var(--navy2), var(--navy)); text-align: left; display: grid; align-content: end; gap: 12px; min-height: 240px; transition: border-color .3s, transform .4s; width: 100%; }
+.fcard:hover { border-color: var(--blue); transform: translateY(-3px); }
+.fcard.big { min-height: 460px; } .fcard h3 { font-size: clamp(1.4rem, 3vw, 2.6rem); } .fcard p { color: var(--soft); max-width: 44ch; font-size: 15px; }
+.fcard svg.bp { position: absolute; right: -4%; top: -6%; width: 62%; opacity: .5; transition: transform 1.2s cubic-bezier(.2,.7,.2,1); } .fcard:hover svg.bp { transform: translate(-3%, 4%) rotate(4deg); }
+.tag { display: inline-block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--silver); width: fit-content; }
+.tg-Verified, .tg-Current, .tg-Established { color: var(--good); border-color: rgba(95,224,168,.4); } .tg-Theory, .tg-Prototype { color: var(--warn); border-color: rgba(255,193,92,.4); }
+.tg-Speculation, .tg-Concept { color: var(--bad); border-color: rgba(255,138,154,.4); } .tg-Educational { color: var(--blue); border-color: rgba(47,123,255,.5); }
+
+/* chapter index */
+.row { display: grid; grid-template-columns: 56px 1fr auto; gap: 16px; align-items: center; padding: 22px 4px; border-top: 1px solid var(--line); text-align: left; width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; position: relative; overflow: hidden; }
+.row:last-of-type { border-bottom: 1px solid var(--line); }
+.row .n { font-family: var(--display); font-stretch: 125%; font-weight: 300; font-size: 14px; color: var(--soft); }
+.row h3 { font-size: clamp(1.15rem, 3vw, 2.3rem); font-weight: 600; transition: transform .4s; }
+.row p { color: var(--soft); font-size: 14px; margin-top: 4px; max-width: 60ch; }
+.row .go { display: flex; align-items: center; gap: 14px; color: var(--soft); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+.row svg.fly { position: absolute; right: 14%; top: 50%; width: 54px; margin-top: -27px; opacity: 0; transform: translateX(80px) rotate(90deg); transition: .6s cubic-bezier(.2,.7,.2,1); }
+.row:hover h3 { transform: translateX(10px); } .row:hover svg.fly { opacity: .9; transform: translateX(0) rotate(90deg); } .row:hover .go { color: #fff; }
+@media (max-width: 700px) { .row { grid-template-columns: 34px 1fr; } .row .go { display: none; } .row svg.fly { display: none; } }
+
+/* explorer */
+.ctl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 28px; }
+.search { flex: 1 1 240px; min-width: 0; background: var(--navy); border: 1px solid var(--line); color: var(--text); border-radius: 999px; padding: 12px 20px; font: inherit; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 9px 16px; font-size: 13px; color: var(--soft); transition: .2s; }
+.chip:hover { color: #fff; } .chip[aria-pressed=true] { background: var(--blue); border-color: var(--blue); color: #fff; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
+.ac { border: 1px solid var(--line); border-radius: 14px; background: var(--navy); overflow: hidden; text-align: left; padding: 0; display: grid; transition: border-color .3s, transform .4s; }
+.ac:hover { border-color: var(--blue); transform: translateY(-4px); }
+.ac .bpbox { aspect-ratio: 5/4; position: relative; background: radial-gradient(circle at 50% 40%, #16264a, var(--navy) 70%); overflow: hidden;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px), radial-gradient(circle at 50% 40%, #16264a, var(--navy) 70%); background-size: 28px 28px, 28px 28px, 100% 100%; }
+.ac .bpbox svg { position: absolute; inset: 8% 10%; width: 80%; height: 84%; transition: transform .8s cubic-bezier(.2,.7,.2,1); } .ac:hover .bpbox svg { transform: scale(1.06) rotate(-3deg); }
+.ac .bd { padding: 16px 18px 18px; display: grid; gap: 4px; } .ac h3 { font-size: 1.15rem; } .ac small { color: var(--soft); font-size: 13px; }
+.ac .kv { display: flex; gap: 14px; margin-top: 8px; font-size: 12px; color: var(--silver); flex-wrap: wrap; }
+.empty { padding: 40px; text-align: center; color: var(--soft); border: 1px dashed var(--line); border-radius: 14px; grid-column: 1/-1; }
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(2,4,9,.96); overflow-y: auto; padding: calc(24px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); }
+.mbox { max-width: 920px; margin: 0 auto; background: linear-gradient(160deg, var(--navy2), var(--navy)); border: 1px solid var(--line); border-radius: 20px; padding: clamp(20px, 4vw, 44px); display: grid; gap: 24px; }
+.mbox .top { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.mbox h2 { font-size: clamp(1.8rem, 5vw, 3.4rem); }
+.mbox .bpbig { aspect-ratio: 16/8; border-radius: 12px; border: 1px solid var(--line); position: relative; overflow: hidden; background: radial-gradient(circle at 50% 50%, #16264a, var(--navy) 70%); }
+.mbox .bpbig svg { position: absolute; inset: 6% 0; width: 100%; height: 88%; }
+table.spec { width: 100%; border-collapse: collapse; font-size: 14px; } .spec th, .spec td { text-align: left; padding: 10px 0; border-top: 1px solid var(--line); vertical-align: top; } .spec th { color: var(--soft); font-weight: 400; width: 38%; padding-right: 12px; }
+.xbtn { border: 1px solid var(--line); background: var(--glass); border-radius: 999px; padding: 8px 16px; font-size: 13px; }
+.xbtn:hover { border-color: var(--blue); }
+.terms { display: grid; gap: 22px; max-width: 70ch; } .terms h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -.01em; margin-bottom: 6px; } .terms p { color: var(--silver); font-size: 15px; }
+.ig { display: inline-flex !important; align-items: center; gap: 8px; } .ig:hover { color: #fff; }
+
+/* facts */
+.facts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.fact { border-top: 1px solid var(--line); padding: 20px 0 8px; }
+.fact button { width: 100%; text-align: left; background: none; border: 0; padding: 0; display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: start; }
+.fact h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 600; } .fact .pl { font-size: 22px; line-height: 1; color: var(--blue); transition: transform .3s; } .fact[data-o=true] .pl { transform: rotate(45deg); }
+.fact .ans { color: var(--soft); max-height: 0; overflow: hidden; transition: max-height .5s ease; } .fact[data-o=true] .ans { max-height: 400px; } .fact .ans p { padding: 14px 0 12px; max-width: 52ch; }
+
+/* gallery */
+.gal { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 900px) { .gal { grid-template-columns: repeat(6, minmax(0, 1fr)); } .g1 { grid-column: span 3; } .g2, .g3 { grid-column: span 3; } .g4, .g5, .g6 { grid-column: span 2; } .g7 { grid-column: span 6; } }
+.ph { margin: 0; position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 4/3; background: var(--navy); border: 1px solid var(--line); } .g7 { aspect-ratio: 21/8; }
+.ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2,.7,.2,1); } .ph:hover img { transform: scale(1.05); }
+.ph figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 38px 16px 12px; background: linear-gradient(transparent, rgba(4,6,12,.88)); font-size: 13px; z-index: 1; display: grid; gap: 2px; }
+.ph figcaption a { color: var(--soft); font-size: 11px; }
+
+/* news / about / contact / footer */
+.news { display: grid; gap: 0; }
+.nitem { border-top: 1px solid var(--line); padding: 22px 0; } .nitem summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; } .nitem summary::-webkit-details-marker { display: none; }
+.nitem h3 { font-size: clamp(1.1rem, 2.4vw, 1.6rem); font-weight: 600; } .nitem .c { margin-top: 14px; color: var(--soft); display: grid; gap: 12px; max-width: 70ch; }
+.about { display: grid; gap: 36px; } @media (min-width: 900px) { .about { grid-template-columns: 1.1fr 1fr; gap: 90px; } }
+.about .lead { font-family: var(--display); font-stretch: 112%; font-weight: 600; font-size: clamp(1.6rem, 3.6vw, 3rem); line-height: 1.1; letter-spacing: -.02em; }
+.about p { color: var(--soft); max-width: 52ch; } .about p + p { margin-top: 14px; }
+.cform { display: grid; gap: 14px; max-width: 640px; } .cform label { display: grid; gap: 6px; font-size: 13px; color: var(--soft); }
+.cform input, .cform select, .cform textarea { background: var(--navy); border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 12px 14px; font: inherit; min-width: 0; }
+.out { border: 1px dashed var(--line); border-radius: 12px; padding: 16px; white-space: pre-wrap; color: var(--silver); font-size: 14px; }
+footer { border-top: 1px solid var(--line); padding-block: 50px calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 30px; color: var(--soft); font-size: 14px; }
+.fcols { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); } .fcols h4 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--text); margin-bottom: 10px; font-stretch: 110%; }
+.fcols a, .fcols button { display: block; background: none; border: 0; padding: 3px 0; color: var(--soft); text-decoration: none; text-align: left; } .fcols a:hover, .fcols button:hover { color: #fff; }
+
+/* chapter page */
+.chp { padding-top: calc(90px + env(safe-area-inset-top, 0px)); }
+.chhead { padding-block: 40px 30px; display: grid; gap: 16px; } .chhead h1 { font-size: clamp(2.2rem, 7vw, 6rem); font-stretch: 125%; font-weight: 800; letter-spacing: -.035em; }
+.crumb { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+.pbar { display: flex; gap: 4px; } .pbar i { width: clamp(14px, 3vw, 30px); height: 3px; background: rgba(255,255,255,.14); border-radius: 2px; } .pbar i.d { background: var(--blue); } .pbar i.n { background: #fff; }
+.theater { display: grid; gap: 18px; margin-block: 20px 50px; } @media (min-width: 980px) { .theater { grid-template-columns: 1.7fr 1fr; } }
+.screen { position: relative; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 40px 100px -40px rgba(47,123,255,.4); }
+.screen video { width: 100%; height: 100%; display: block; background: #000; object-fit: contain; }
+.over { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 22px; background: radial-gradient(circle at 50% 40%, rgba(16,28,54,.9), rgba(4,6,12,.95)); z-index: 2; }
+.bigplay { width: 86px; height: 86px; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.08); display: grid; place-items: center; transition: .3s; } .bigplay:hover { background: #fff; color: #04060c; transform: scale(1.08); }
+.spin { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,.15); border-top-color: var(--blue); animation: rot 1s linear infinite; } @keyframes rot { to { transform: rotate(360deg); } }
+.prog { height: 3px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; margin-top: 10px; } .prog span { display: block; width: 0; height: 100%; background: var(--blue); }
+.plist { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.pi { text-align: left; border: 1px solid var(--line); border-radius: 12px; background: var(--navy); padding: 14px 16px; display: grid; gap: 4px; transition: .2s; } .pi:hover { border-color: var(--silver); } .pi[aria-current=true] { border-color: var(--blue); background: var(--navy2); }
+.pi b { font-weight: 600; font-size: 15px; } .pi small { color: var(--soft); font-size: 12px; }
+.vnav { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.beats { display: grid; gap: 0; } .beat { display: grid; gap: 10px; padding: 28px 0; border-top: 1px solid var(--line); } @media (min-width: 900px) { .beat { grid-template-columns: 1fr 1.6fr; gap: 60px; } }
+.beat h3 { font-size: clamp(1.2rem, 2.4vw, 1.8rem); font-weight: 600; } .beat p { color: var(--soft); max-width: 62ch; } .beat .hd { display: grid; gap: 10px; justify-items: start; }
+.panel { border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(160deg, var(--navy2), var(--navy)); padding: clamp(18px, 3vw, 36px); display: grid; gap: 22px; margin-block: 40px; }
+.panel > h2 { font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.two { display: grid; gap: 22px; } @media (min-width: 820px) { .two { grid-template-columns: 1fr 1fr; gap: 40px; } }
+input[type=range] { width: 100%; accent-color: var(--blue); } .stat { font-family: var(--display); font-stretch: 125%; font-weight: 700; font-size: clamp(2rem, 6vw, 4rem); line-height: 1; }
+.bar { display: grid; grid-template-columns: 120px 1fr 90px; gap: 12px; align-items: center; font-size: 13px; } .bar .t { height: 12px; background: rgba(255,255,255,.07); border-radius: 6px; overflow: hidden; } .bar .t i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue), #7fb0ff); border-radius: 6px; transition: width .6s; } .bar.un .t i { background: linear-gradient(90deg, #b68cff, #e0c8ff); }
+@media (max-width: 560px) { .bar { grid-template-columns: 84px 1fr 70px; font-size: 12px; } }
+.acc { border-top: 1px solid var(--line); } .acc > button { width: 100%; text-align: left; background: none; border: 0; padding: 18px 0; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.acc > button h3 { font-size: clamp(1.05rem, 2.2vw, 1.5rem); font-weight: 600; } .acc .body { display: none; padding-bottom: 22px; } .acc[data-o=true] .body { display: grid; gap: 16px; } .acc[data-o=true] .pl { transform: rotate(45deg); } .acc .pl { transition: transform .3s; color: var(--blue); font-size: 22px; }
+.kvl { display: grid; gap: 14px; } @media (min-width: 760px) { .kvl { grid-template-columns: 1fr 1fr; } } .kvl div b { display: block; font-size: 12px; color: var(--blue); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 3px; font-weight: 600; } .kvl p { color: var(--silver); font-size: 15px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.radar { position: relative; width: min(100%, 460px); aspect-ratio: 1; margin: 0 auto; } .radar canvas { width: 100%; height: 100%; display: block; border-radius: 50%; border: 1px solid rgba(47,123,255,.4); box-shadow: 0 0 60px -10px rgba(47,123,255,.35); }
+.ladder { display: grid; gap: 12px; } .lr { display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; background: var(--navy); } .lr h3 { font-size: 1.1rem; font-weight: 600; } .lr p { color: var(--soft); font-size: 14px; }
+.cols3 { display: grid; gap: 14px; } @media (min-width: 800px) { .cols3 { grid-template-columns: repeat(3, 1fr); } } .cols3 > div { border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: var(--navy); display: grid; gap: 10px; align-content: start; } .cols3 li { color: var(--soft); font-size: 14px; margin-left: 16px; } .cols3 ul { margin: 0; padding: 0; display: grid; gap: 8px; }
+.src a { color: var(--blue); text-decoration: none; border-bottom: 1px solid rgba(47,123,255,.4); }
+.note { font-size: 13px; color: var(--soft); border-left: 2px solid var(--blue); padding-left: 14px; max-width: 70ch; }
+.strip { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; } .strip > button { scroll-snap-align: start; flex: 0 0 min(72vw, 300px); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e7ecf5"/><stop offset="1" stop-color="#7f93b8"/></linearGradient></defs></svg>
+<div id="root"></div>
+
+<script>
+(function () {
+  var html = htm.bind(React.createElement), h = React.createElement, useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var CM = 'https://commons.wikimedia.org/wiki/';
+  function cmv(name) { return { file: CM + 'Special:FilePath/' + name, page: CM + 'File:' + name, src: 'Wikimedia Commons' }; }
+  function V(name, title, desc, who) { var o = cmv(name); o.title = title; o.desc = desc; o.who = who; return o; }
+  function X(title, desc, url, label, who) { return { title: title, desc: desc, url: url, label: label, who: who }; }
+
+  /* ---------- silhouettes ---------- */
+  function mir(pts) { return pts.map(function (p) { return [200 - p[0], p[1]]; }); }
+  function poly(pts) { return pts.map(function (p) { return p.join(','); }).join(' '); }
+  var SH = {
+    airliner2: { f: [12, 12, 188], w: [[94, 78], [24, 126], [24, 138], [94, 112]], t: [[95, 164], [66, 184], [66, 190], [95, 181]], e: [[58, 108, 4, 9]] },
+    airliner4: { f: [12, 12, 188], w: [[94, 76], [20, 128], [20, 140], [94, 112]], t: [[95, 164], [66, 184], [66, 190], [95, 181]], e: [[64, 100, 4, 9], [42, 116, 4, 9]] },
+    delta: { f: [7, 6, 190], w: [[97, 70], [30, 172], [30, 182], [97, 160]], t: [], e: [[70, 160, 3, 12]] },
+    spy: { f: [8, 4, 196], w: [[96, 96], [66, 176], [66, 184], [96, 170]], t: [[96, 40], [86, 100], [96, 100]], e: [[80, 148, 5, 15]] },
+    glider: { f: [8, 20, 186], w: [[96, 92], [8, 98], [8, 106], [96, 108]], t: [[96, 172], [62, 176], [62, 182], [96, 184]], e: [] },
+    prop: { f: [11, 22, 184], w: [[94, 76], [14, 80], [14, 98], [94, 96]], t: [[95, 166], [62, 170], [62, 180], [95, 180]], e: [], p: [[100, 20, 18]] },
+    prop4: { f: [14, 14, 188], w: [[93, 78], [10, 80], [10, 98], [93, 98]], t: [[94, 170], [56, 172], [56, 182], [94, 182]], e: [[64, 76, 4, 9], [38, 78, 4, 9]] },
+    heavy: { f: [16, 8, 190], w: [[92, 78], [12, 122], [12, 136], [92, 108]], t: [[94, 168], [56, 176], [56, 186], [94, 180]], e: [[62, 102, 4, 9], [44, 112, 4, 9], [28, 122, 4, 9]] },
+    rocket: { f: [10, 10, 186], w: [[96, 128], [66, 160], [66, 172], [96, 170]], t: [[96, 172], [72, 190], [72, 194], [96, 190]], e: [] },
+    x59: { f: [7, 2, 196], w: [[97, 120], [50, 176], [50, 184], [97, 172]], t: [[97, 172], [80, 194], [80, 198], [97, 192]], e: [] },
+    biz: { f: [9, 18, 184], w: [[95, 84], [36, 122], [36, 132], [95, 112]], t: [[96, 162], [70, 178], [70, 184], [96, 176]], e: [[82, 160, 3, 9]] },
+    flyer: { f: [4, 70, 140], w: [[98, 60], [14, 62], [14, 76], [98, 74]], t: [[98, 52], [60, 52], [60, 56], [98, 56]], e: [], p: [[116, 120, 10], [84, 120, 10]] }
+  };
+  function Plane(p) {
+    var s = SH[p.k] || SH.airliner2, stroke = p.stroke || 'rgba(255,255,255,.55)', fill = p.fill || 'url(#sg)';
+    var kids = [h('rect', { key: 'f', x: 100 - s.f[0] / 2, y: s.f[1], width: s.f[0], height: s.f[2] - s.f[1], rx: s.f[0] / 2, fill: fill, stroke: stroke, strokeWidth: .8 })];
+    [s.w, s.t].forEach(function (a, i) { if (a && a.length) { kids.push(h('polygon', { key: 'a' + i, points: poly(a), fill: fill, stroke: stroke, strokeWidth: .8 })); kids.push(h('polygon', { key: 'b' + i, points: poly(mir(a)), fill: fill, stroke: stroke, strokeWidth: .8 })); } });
+    (s.e || []).forEach(function (e, i) { kids.push(h('ellipse', { key: 'e' + i, cx: e[0], cy: e[1], rx: e[2], ry: e[3], fill: '#2a3550', stroke: stroke, strokeWidth: .8 })); kids.push(h('ellipse', { key: 'f' + i, cx: 200 - e[0], cy: e[1], rx: e[2], ry: e[3], fill: '#2a3550', stroke: stroke, strokeWidth: .8 })); });
+    (s.p || []).forEach(function (q, i) { kids.push(h('line', { key: 'p' + i, x1: q[0] - q[2], x2: q[0] + q[2], y1: q[1], y2: q[1], stroke: stroke, strokeWidth: 1.4 })); });
+    return h('svg', { viewBox: '0 0 200 200', className: p.cls, 'aria-hidden': true, style: p.style, preserveAspectRatio: 'xMidYMid meet' }, kids);
+  }
+
+  /* ---------- aircraft data ---------- */
+  var AC = [
+    { id: 'concorde', n: 'Concorde', m: 'BAC / Sud Aviation', f: '2 March 1969', c: ['Commercial', 'Historical'], k: 'delta', sp: 'Mach 2.04 (about 2,180 km/h)', r: 'About 7,250 km', e: 'Four Rolls-Royce/Snecma Olympus 593 turbojets with afterburners',
+      facts: ['Twenty were built; 14 entered airline service with British Airways and Air France.', 'It flew passengers at twice the speed of sound until its retirement in 2003.', 'The airframe stretched by several centimetres in flight as skin heated up.'], p: 'Concorde was a joint British and French project and the only supersonic airliner to give years of regular service. It crossed the Atlantic in about three and a half hours. High fuel use, noise limits over land and a 2000 crash at Paris led to its retirement.' },
+    { id: 'b747', n: 'Boeing 747', m: 'Boeing', f: '9 February 1969', c: ['Commercial', 'Cargo'], k: 'airliner4', sp: 'Mach 0.92 max (747-400)', r: 'About 13,450 km (747-400)', e: 'Four turbofans (GE CF6, Pratt & Whitney PW4000 or Rolls-Royce RB211 on the 747-400)',
+      facts: ['Entered airline service with Pan Am in January 1970.', 'Its upper-deck hump was designed so the nose could swing up for freight loading.', 'The 747-8, launched in 2005, is the longest airliner at 76.3 m.'], p: 'The 747 was the first wide-body airliner. It made long-haul travel cheaper and put overseas flights within reach of many more people. Passenger production has ended, but freighter versions still fly.' },
+    { id: 'sr71', n: 'Lockheed SR-71 Blackbird', m: 'Lockheed (Skunk Works)', f: '22 December 1964', c: ['Military', 'Historical'], k: 'spy', sp: 'Above Mach 3 (3,529.56 km/h in the 1976 record)', r: 'About 5,400 km without refuelling', e: 'Two Pratt & Whitney J58 turbo-ramjets',
+      facts: ['32 were built, and none was lost to enemy action.', 'On 28 July 1976 an SR-71 set the absolute speed record for a piloted air-breathing aircraft: 3,529.56 km/h.', 'It leaked fuel on the ground because the panels sealed only when heated by high-speed flight.'], p: 'The SR-71 was a strategic reconnaissance aircraft built largely from titanium. Its speed was its defence. NASA also flew examples for research. It was retired from the US Air Force in 1998.' },
+    { id: 'u2', n: 'Lockheed U-2', m: 'Lockheed', f: '1 August 1955', c: ['Military'], k: 'glider', sp: 'No official figure cited', r: 'More than 10,000 km', e: 'Pratt & Whitney J75 (early models), General Electric F118 (U-2S)',
+      facts: ['It operates above 70,000 ft (21,000 m), far above the altitude of airliners.', 'Its long glider-like wings make landing difficult, and chase cars guide pilots down.', 'It first flew in 1955 and is still in service, with upgrades.'], p: 'The U-2 was designed for high-altitude reconnaissance. It became widely known after Francis Gary Powers was shot down over the Soviet Union in 1960. Pilots wear full pressure suits.' },
+    { id: 'spitfire', n: 'Supermarine Spitfire', m: 'Supermarine', f: '5 March 1936', c: ['Military', 'Historical'], k: 'prop', sp: 'About 602 km/h (Mk Vb)', r: 'Varied by mark', e: 'One Rolls-Royce Merlin (later Griffon) V12',
+      facts: ['20,351 were built in total.', 'Its elliptical wing gave a thin section with room for guns and landing gear.', 'It flew throughout the Second World War and in the Battle of Britain in 1940.'], p: 'The Spitfire became a symbol of British resistance in 1940. It was continually developed, and later versions flew faster and higher than the early ones, with more powerful engines.' },
+    { id: 'a380', n: 'Airbus A380', m: 'Airbus', f: '27 April 2005', c: ['Commercial'], k: 'airliner4', sp: 'Mach 0.85 cruise (Mach 0.89 max operating)', r: 'About 15,200 km', e: 'Four turbofans (Rolls-Royce Trent 900 or Engine Alliance GP7200)',
+      facts: ['It has two full-length passenger decks.', 'Typical three-class seating is about 525, and it is certified for up to 853.', '251 were delivered before production ended in 2021.'], p: 'The A380 is the largest passenger aircraft ever built, with a wingspan of 79.75 m. Many airports needed upgrades to handle it. Airlines later preferred smaller twin-engine aircraft, and Airbus ended production.' },
+    { id: 'b787', n: 'Boeing 787 Dreamliner', m: 'Boeing', f: '15 December 2009', c: ['Commercial'], k: 'airliner2', sp: 'Mach 0.85 cruise', r: 'About 14,140 km (787-9)', e: 'Two turbofans (GEnx or Rolls-Royce Trent 1000)',
+      facts: ['About half the structure by weight is composite material.', 'Larger windows have electronic dimming instead of shades.', 'The cabin is pressurised to a lower altitude than older airliners.'], p: 'The 787 uses composite materials and efficient engines to cut fuel burn. It allows airlines to fly long routes between city pairs that were too small for larger aircraft.' },
+    { id: 'c130', n: 'Lockheed C-130 Hercules', m: 'Lockheed', f: '23 August 1954', c: ['Military', 'Cargo'], k: 'prop4', sp: 'About 590 km/h (C-130H)', r: 'About 3,800 km', e: 'Four Allison T56 turboprops',
+      facts: ['It has been in continuous production for more than 60 years.', 'It can land on short, unprepared strips.', 'Versions serve as transports, gunships, tankers and weather aircraft.'], p: 'The Hercules was designed as a tactical transport with a rear loading ramp and a cargo hold shaped like a truck bed. Its reliability has made it one of the most widely used military aircraft in the world.' },
+    { id: 'an225', n: 'Antonov An-225 Mriya', m: 'Antonov', f: '21 December 1988', c: ['Cargo', 'Historical'], k: 'heavy', sp: 'About 850 km/h', r: 'About 15,400 km (empty)', e: 'Six Progress D-18T turbofans',
+      facts: ['Only one was completed.', 'Its maximum takeoff weight was about 640 tonnes.', 'It was destroyed at Hostomel Airport near Kyiv in February 2022.'], p: 'The An-225 was built to carry the Soviet Buran space shuttle. In later years it carried the heaviest and longest single cargo items flown by any aircraft. A second airframe was never finished.' },
+    { id: 'x15', n: 'North American X-15', m: 'North American Aviation', f: '8 June 1959 (glide flight)', c: ['Experimental', 'Historical'], k: 'rocket', sp: 'Mach 6.72 (about 7,274 km/h), 3 October 1967', r: 'Not applicable (rocket plane)', e: 'One Reaction Motors XLR99 rocket engine',
+      facts: ['It was carried aloft under a B-52 and dropped.', 'It holds the record for the fastest piloted powered aircraft.', 'On 22 August 1963 Joe Walker reached 107.96 km, above the 100 km Kármán line.'], p: 'The X-15 research program ran for ten years and gave data on hypersonic flight, heating and flying at the edge of space. Its pilots earned astronaut wings for flights above 50 miles.' },
+    { id: 'x1', n: 'Bell X-1', m: 'Bell Aircraft', f: '19 January 1946 (glide flight)', c: ['Experimental', 'Historical'], k: 'rocket', sp: 'Mach 1.06, 14 October 1947', r: 'Not applicable (rocket plane)', e: 'Reaction Motors XLR11 rocket with four chambers',
+      facts: ['Chuck Yeager flew it past Mach 1 in level flight on 14 October 1947.', 'It was air-launched from a modified B-29.', 'It was named Glamorous Glennis after Yeager’s wife.'], p: 'The X-1 showed that a piloted aircraft could fly faster than sound, and that the idea of a “sound barrier” was not a wall. Its design was based on the shape of a .50 calibre bullet.' },
+    { id: 'wright', n: 'Wright Flyer', m: 'Wright brothers', f: '17 December 1903', c: ['Historical', 'Experimental'], k: 'flyer', sp: 'About 48 km/h airspeed (about 11 km/h over the ground on the first flight, into a strong headwind)', r: '37 m on the first flight', e: 'One 12 hp four-cylinder engine built by the Wrights and Charlie Taylor',
+      facts: ['The first flight lasted 12 seconds and covered about 37 m.', 'Four flights were made that day. The longest lasted 59 seconds and covered 852 ft.', 'It controlled roll with wing warping, pitch with a front elevator and yaw with a rudder.'], p: 'The Wrights’ achievement was the first sustained, controlled, powered flight by a heavier-than-air machine. Their key idea was control in three axes, learned from years of glider work.' },
+    { id: 'dc3', n: 'Douglas DC-3', m: 'Douglas Aircraft', f: '17 December 1935', c: ['Commercial', 'Historical', 'Cargo'], k: 'prop', sp: 'About 333 km/h cruise', r: 'About 2,400 km', e: 'Two Wright R-1820 radial piston engines',
+      facts: ['More than 16,000 were built, counting military C-47 versions.', 'It made passenger flying profitable without government airmail payments.', 'Some are still flying today.'], p: 'The DC-3 was the first airliner that could make money carrying passengers alone. It was reliable, easy to fly and could land on short fields, which helped it spread worldwide.' },
+    { id: 'b777', n: 'Boeing 777', m: 'Boeing', f: '12 June 1994', c: ['Commercial'], k: 'airliner2', sp: 'Mach 0.84 cruise', r: 'About 13,650 km (777-300ER)', e: 'Two turbofans (GE90, Pratt & Whitney PW4000 or Rolls-Royce Trent 800)',
+      facts: ['The 777 was the first Boeing airliner designed entirely on computers.', 'Its GE90-115B is among the most powerful jet engines ever built.', 'It is the largest twin-engine jet in service.'], p: 'The 777 brought the range and capacity once reserved for four-engine aircraft to twin-engine jets. It became a long-haul workhorse for airlines around the world.' },
+    { id: 'a350', n: 'Airbus A350', m: 'Airbus', f: '14 June 2013', c: ['Commercial'], k: 'airliner2', sp: 'Mach 0.85 cruise', r: 'About 15,000 km (A350-900)', e: 'Two Rolls-Royce Trent XWB turbofans',
+      facts: ['The fuselage and wings use mostly carbon-fibre composites.', 'Airlines fly it on ultra-long routes of over 17 hours.', 'Its distinctive cockpit windows have a black mask.'], p: 'The A350 is Airbus’s answer to the 787 and the 777. It was designed with composite structure and quieter, more efficient engines to cut fuel burn and noise.' },
+    { id: 'a320', n: 'Airbus A320 family', m: 'Airbus', f: '22 February 1987', c: ['Commercial'], k: 'airliner2', sp: 'Mach 0.78 cruise', r: 'About 6,150 km (A320ceo)', e: 'Two turbofans (CFM56 or IAE V2500; LEAP or PW1100G on the neo)',
+      facts: ['It was the first airliner with digital fly-by-wire controls.', 'It entered service with Air France in 1988.', 'The family is one of the best-selling airliner families ever.'], p: 'The A320 family carries many of the world’s short and medium-haul passengers. Fly-by-wire changed cockpit design, with a sidestick in place of a control column.' },
+    { id: 'c172', n: 'Cessna 172 Skyhawk', m: 'Cessna', f: '12 June 1955', c: ['Private'], k: 'prop', sp: 'About 226 km/h cruise', r: 'About 1,200 km', e: 'One Lycoming four-cylinder piston engine',
+      facts: ['It is the most produced aircraft in history, with over 44,000 built.', 'Its high wing gives pilots a good view and makes it stable.', 'It is a very common training aircraft.'], p: 'The 172 is where many pilots learn to fly. It is forgiving, simple and widely available, and has been in production for nearly seventy years.' },
+    { id: 'g650', n: 'Gulfstream G650', m: 'Gulfstream Aerospace', f: '25 November 2009', c: ['Private', 'Commercial'], k: 'biz', sp: 'Mach 0.925 max operating', r: 'About 12,960 km at Mach 0.85', e: 'Two Rolls-Royce BR725 turbofans',
+      facts: ['At long-range cruise it can fly for roughly 14 hours without refuelling.', 'It set several city-pair speed records.', 'The cabin windows are oval, and the aircraft can cruise at 51,000 ft.'], p: 'The G650 is a long-range business jet. It is typical of the large-cabin jets used by corporations and wealthy owners, and shows how far private aviation has developed.' },
+    { id: 'x59', n: 'NASA X-59', m: 'Lockheed Martin / NASA', f: '2025', c: ['Experimental'], k: 'x59', sp: 'Design speed about Mach 1.4', r: 'Experimental, not applicable', e: 'One General Electric F414 turbofan',
+      facts: ['It is designed to reduce the sonic boom to a quieter thump.', 'Pilots view forward through a camera display because the nose is so long.', 'It first flew in October 2025.'], p: 'The X-59 is NASA’s Quesst experiment. The goal is to gather data on how people react to a quiet sonic boom and help regulators decide if supersonic flight over land can return.' }
+  ];
+  var CATS = ['Commercial', 'Military', 'Cargo', 'Experimental', 'Historical', 'Private'];
+
+  /* ---------- chapters ---------- */
+  var CH = [
+    { id: 1, t: 'The History of Aviation', tag: 'From balloons to the 787.', w: 'timeline', shape: 'flyer',
+      intro: 'In 120 years, flight went from a 12-second hop to routes of more than 17 hours. This chapter follows the people and machines that did it.',
+      films: [V('First_flights_in_aviation_history.ogv', 'First flights in aviation history', 'A short film file on Wikimedia Commons about early flight.', 'Wikimedia Commons'), V('Space_Shuttle_Enterprise_747_takeoff.ogv', 'Boeing 747 carrying Space Shuttle Enterprise', 'A modified 747 takes off with the shuttle prototype on its back. NASA footage.', 'NASA via Wikimedia Commons'),
+        X('The Wright brothers, plane and gliders', 'Britannica’s video page on the Wright brothers’ gliders and aircraft.', 'https://britannica.com/video/brothers-Wright-plane-gliders/-183935', 'Watch on Britannica', 'Encyclopaedia Britannica')],
+      beats: [{ h: 'Balloons and gliders', k: 'Verified', t: 'The first free flight by people was a hot-air balloon in Paris on 21 November 1783. George Cayley set out the principles of the fixed-wing aeroplane and built gliders in the 1800s. Otto Lilienthal made more than 2,000 glider flights in the 1890s before dying in a crash in 1896.' },
+        { h: '17 December 1903', k: 'Verified', t: 'At Kitty Hawk, North Carolina, the Wright brothers made four flights. The first, by Orville, lasted 12 seconds and covered about 37 m. The last, by Wilbur, lasted 59 seconds and covered 852 ft. Their key idea was control in three axes.' },
+        { h: 'World War I', k: 'Verified', t: 'Aircraft started the war as scouts and ended it as fighters and bombers. Machine guns synchronised to fire through the propeller appeared in 1915. The Royal Air Force was formed on 1 April 1918, the first independent air force.' },
+        { h: 'World War II and the first jets', k: 'Verified', t: 'Radar, long-range bombers and fighters like the Spitfire shaped the war. Hans von Ohain and Frank Whittle developed jet engines independently. The Heinkel He 178 made the first jet-powered flight on 27 August 1939, and the Messerschmitt Me 262 was the first operational jet fighter.' },
+        { h: 'Airlines and the jet age', k: 'Verified', t: 'The first scheduled airline flight with a paying passenger was on 1 January 1914 across Tampa Bay. The de Havilland Comet began jet airline service in 1952, and the Boeing 707 followed from 1958. The Boeing 747 flew on 9 February 1969 and entered service in 1970.' },
+        { h: 'Modern technology', k: 'Verified', t: 'The Airbus A320 brought digital fly-by-wire to airliners in 1988. Composite structures, GPS navigation, satellite tracking and efficient turbofans define aircraft like the 787 and the A350.' }],
+      facts: ['The first Wright flight, about 37 m, was shorter than the wingspan of a Boeing 747-400 (64.4 m).', 'The Concorde and the 747 first flew within a month of each other in 1969.', 'The Comet suffered fatal fatigue failures in 1954, which changed how aircraft are tested.'] },
+    { id: 2, t: 'The Biggest Aviation Mysteries', tag: 'What we know, and what we do not.', w: 'evidence', shape: 'airliner2',
+      intro: 'Some aviation stories have no final answer. Here every claim is sorted into verified fact, theory or speculation, so that you can see how much each rests on evidence.',
+      films: [X('Official investigation material', 'There is no film here I could verify. Official reports are the best source. The ATSB led the underwater search for MH370.', 'https://www.atsb.gov.au/', 'Open ATSB', 'Australian Transport Safety Bureau'),
+        X('Research on the Earhart disappearance', 'TIGHAR publishes its research on the Nikumaroro hypothesis. This is one group’s theory and is not accepted as proven.', 'https://tighar.org/', 'Open TIGHAR', 'TIGHAR')],
+      beats: [{ h: 'Malaysia Airlines Flight MH370', k: 'Verified', t: 'On 8 March 2014 a Boeing 777-200ER with 239 people on board disappeared from radar after leaving Kuala Lumpur for Beijing. Military radar showed it turning back across Malaysia. Satellite handshakes from Inmarsat showed it kept flying for hours and ended in the southern Indian Ocean. A flaperon found on Réunion in 2015 was confirmed as from MH370. Seabed searches have not found the main wreckage.' },
+        { h: 'MH370 theories', k: 'Theory', t: 'Investigators agree the turn-back was likely made with manual or deliberate input. The 2018 Malaysian safety report could not determine why. Theories include deliberate action by someone on board and an in-flight emergency. None has been proven.' },
+        { h: 'Amelia Earhart', k: 'Verified', t: 'On 2 July 1937 Earhart and navigator Fred Noonan disappeared near Howland Island in a Lockheed Electra on a flight around the world. The US Coast Guard cutter Itasca heard their last radio calls. No confirmed wreckage has ever been found.' },
+        { h: 'What may have happened to Earhart', k: 'Theory', t: 'The most widely held view is that the aircraft ran out of fuel and went down at sea near Howland. A hypothesis says they landed on Nikumaroro and died there. Evidence offered for it is debated and not conclusive.' },
+        { h: 'Claims without evidence', k: 'Speculation', t: 'Stories that Earhart was captured, or that aircraft vanish in the Bermuda Triangle through mysterious forces, lack credible evidence. Lloyd’s and the US Coast Guard have found no unusual loss rate there. Flight 19, five Navy bombers lost in 1945, is best explained by navigation errors and fuel exhaustion.' },
+        { h: 'Unusual reports in the sky', k: 'Educational', t: 'Most reports of unidentified lights come down to aircraft lights, planets, balloons, satellites or atmospheric effects. A small share remain unexplained because the data is poor, which does not make them extraordinary.' }],
+      facts: ['In 1971 the hijacker known as D. B. Cooper parachuted from a Boeing 727 with $200,000. He was never identified, and the FBI closed its active investigation in 2016.', 'After MH370, the required battery life of the underwater locator beacons on flight recorders was extended to 90 days for new aircraft.', 'MH370 also led ICAO to introduce global aircraft tracking requirements.'] },
+    { id: 3, t: 'Legendary Aircraft and Their Stories', tag: 'Nine machines that changed the sky.', w: 'legends', shape: 'spy',
+      intro: 'Some aircraft are remembered for what they could do, others for what they meant. These nine each left a mark on aviation.',
+      films: [V('SR-71_Blackbird_Refueling_in_Flight.webm', 'SR-71 Blackbird refuelling in flight', 'NASA footage of an SR-71 taking on fuel from a tanker.', 'NASA via Wikimedia Commons'), V('NASA_YF-12_Overview.ogv', 'NASA YF-12 overview', 'The YF-12 was the interceptor prototype related to the SR-71. NASA used it for high-speed research.', 'NASA via Wikimedia Commons'),
+        V('YF-12A_Landing_at_Edwards_Air_Force_Base.webm', 'YF-12A landing at Edwards', 'A YF-12A touches down at Edwards Air Force Base.', 'NASA via Wikimedia Commons'), V('YF-12C_Approach_and_Landing_at_Edwards_Air_Force_Base.webm', 'YF-12C approach and landing', 'Approach and landing of the YF-12C. The YF-12C was NASA’s designation for an SR-71 airframe.', 'NASA via Wikimedia Commons'),
+        V('Space_Shuttle_Enterprise_747_takeoff.ogv', 'Boeing 747 shuttle carrier takeoff', 'A 747 carries Enterprise aloft.', 'NASA via Wikimedia Commons')],
+      beats: [{ h: 'Concorde and the 747', k: 'Verified', t: 'Both first flew in 1969. One cut the Atlantic crossing to about three and a half hours for a few. The other carried far more people and changed the economics of flying.' },
+        { h: 'SR-71 and U-2', k: 'Verified', t: 'Both were built at Lockheed to see without being stopped. The U-2 flew above 70,000 ft. The SR-71 flew faster than Mach 3 and set the 1976 air-breathing speed record of 3,529.56 km/h.' },
+        { h: 'Spitfire', k: 'Verified', t: 'The Spitfire flew in 1936 and stayed in front-line service through 1945 with ever more powerful Merlin and Griffon engines. A total of 20,351 were built.' },
+        { h: 'A380, 787, C-130, An-225', k: 'Verified', t: 'The A380 is the largest airliner, with 79.75 m of wingspan. The 787 uses composite structure. The C-130 has been in production since the 1950s. The An-225 was the heaviest aircraft ever built and was destroyed in 2022.' }],
+      facts: ['The SR-71 needed special JP-7 fuel and was refuelled soon after takeoff because its panels leaked until heated.', 'The Spitfire’s Merlin engine drove its propeller through a gearbox.', 'Antonov’s An-225 was built for the Buran space shuttle program.'] },
+    { id: 4, t: 'Accidents and the Lessons Learned', tag: 'How every accident made flying safer.', w: 'accidents', shape: 'airliner4',
+      intro: 'Flying is as safe as it is because investigators examine each accident and the industry acts on what they find. These accounts are factual and avoid graphic detail.',
+      films: [X('NTSB investigations', 'The US National Transportation Safety Board publishes reports and animations, including for United 232.', 'https://www.ntsb.gov/', 'Open NTSB', 'NTSB'), X('BEA investigations', 'France’s BEA published the Air France 447 final report in 2012.', 'https://bea.aero/', 'Open BEA', 'BEA'),
+        X('AAIB investigations', 'The UK Air Accidents Investigation Branch publishes reports and safety recommendations.', 'https://www.gov.uk/aaib', 'Open AAIB', 'UK AAIB')],
+      beats: [{ h: 'How investigators work', k: 'Educational', t: 'Investigators gather wreckage, flight recorders and radar data, and then publish findings and recommendations. Their aim is to prevent repeats, not to assign blame.' },
+        { h: 'Safety rules written after accidents', k: 'Verified', t: 'Today’s standard radio phraseology, crew resource management training, ground proximity warnings and mandatory stall and upset recovery training all come from specific accidents.' }],
+      facts: ['The de Havilland Comet accidents of 1954 showed metal fatigue could start at window corners. Aircraft windows have been rounded ever since.', 'Aloha Airlines flight 243 in 1988 lost part of its roof in flight and landed safely. It led to the aging aircraft program.', 'Today’s crews train for scenarios that were first understood after accidents.'] },
+    { id: 5, t: 'The World’s Fastest Aircraft', tag: 'Mach numbers and the edge of space.', w: 'mach', shape: 'rocket',
+      intro: 'Speed records fall into different classes. A rocket plane, an air-breathing jet and an unmanned test vehicle are not directly comparable, so each is kept apart here.',
+      films: [V('NASA_YF-12_Overview.ogv', 'NASA YF-12 overview', 'A Mach 3-class aircraft that NASA used for high-speed research.', 'NASA via Wikimedia Commons'), V('SR-71_Blackbird_Refueling_in_Flight.webm', 'SR-71 Blackbird refuelling', 'NASA footage of the SR-71 in flight.', 'NASA via Wikimedia Commons'),
+        X('NASA X-15 history', 'NASA’s page on the X-15 research program.', 'https://www.nasa.gov/aeronautics/x-15/', 'Open NASA page', 'NASA'), X('X-15 1959 documentary', 'An article presenting a restored 1959 documentary on the X-15.', 'https://vintageaviationnews.com/warbird-articles/nasas-x-15-original-and-unaltered-1959-documentary.html', 'Open article', 'Vintage Aviation News'),
+        X('X-59 quest for quiet supersonic flight', 'A NASA+ video on the X-59.', 'https://plus.nasa.gov/video/x-59-nasas-quest-for-quiet-supersonic-flight/', 'Watch on NASA+', 'NASA')],
+      beats: [{ h: 'What a Mach number is', k: 'Educational', t: 'Mach 1 is the speed of sound in the surrounding air. It depends on temperature, so it is about 1,225 km/h at sea level and about 1,062 km/h above 11 km, where the air is colder.' },
+        { h: 'Piloted rocket planes', k: 'Verified', t: 'Chuck Yeager flew the Bell X-1 at Mach 1.06 on 14 October 1947. The X-15 reached Mach 6.72 on 3 October 1967 and 107.96 km altitude on 22 August 1963.' },
+        { h: 'Piloted jets', k: 'Verified', t: 'The SR-71 holds the record for a piloted air-breathing aircraft: 3,529.56 km/h, set on 28 July 1976. A turbo-ramjet engine let it fly sustained at over Mach 3.' },
+        { h: 'Unmanned vehicles', k: 'Verified', t: 'NASA’s X-43A scramjet reached about Mach 9.6 in November 2004, with no pilot and for about ten seconds of powered flight. It is a separate class.' },
+        { h: 'Supersonic over land', k: 'Current', t: 'Commercial flight over land at supersonic speed has been restricted in the US since 1973 because of sonic booms. NASA’s X-59 is testing a quieter boom.' }],
+      facts: ['Air heats up as speed rises. At Mach 3 the skin of the SR-71 reached several hundred degrees Celsius.', 'The X-15 was dropped from a B-52 at about 45,000 ft.', 'No airliner has flown faster than Concorde, which cruised at about Mach 2.'] },
+    { id: 6, t: 'How Pilots Navigate and Land', tag: 'Inside the cockpit.', w: 'cockpit', shape: 'airliner2',
+      intro: 'This chapter is educational and is not a replacement for certified pilot training. Real procedures differ by aircraft, airline and country.',
+      films: [V('ORD_-_SEA_May_28_Delta_Landing.webm', 'Delta landing in Seattle', 'A landing video on Wikimedia Commons (file name: ORD to SEA, Delta).', 'Wikimedia Commons'), V('Royal_Thai_Air_Force_Airbus_A340-500_touch-and-go_at_Phuket_5Oct2016.webm', 'Airbus A340-500 touch-and-go', 'A touch-and-go at Phuket.', 'Wikimedia Commons'),
+        X('Crosswind landing technique', 'An Airbus article on the crosswind landing technique, written for pilots.', 'https://flightsafety.airbus.com/2018/05/25/preventing-runway-excursion-the-crosswind-landing-technique/', 'Read on Airbus', 'Airbus')],
+      beats: [{ h: 'Primary flight display', k: 'Educational', t: 'A modern primary flight display combines attitude, airspeed, altitude, vertical speed and heading on one screen. It replaced several separate dials.' },
+        { h: 'Flight management and GPS', k: 'Educational', t: 'The flight management system holds the route, calculates fuel and performance, and gives guidance to the autopilot. GPS gives position without ground beacons.' },
+        { h: 'VOR and ILS', k: 'Educational', t: 'A VOR is a ground radio beacon that gives bearing from the station. An instrument landing system (ILS) gives lateral guidance from a localizer and vertical guidance from a glideslope, typically 3 degrees.' },
+        { h: 'Autopilot and air traffic control', k: 'Educational', t: 'The autopilot flies modes the crew select, and the crew monitors it. Pilots talk to air traffic control in standard phrases so that each message is clear.' },
+        { h: 'Crosswind landings', k: 'Educational', t: 'In a crosswind pilots point the nose into the wind to track the runway line, called a crab, and then align with the runway just before touchdown. Some use a wing-low technique.' }],
+      facts: ['A Category I ILS approach allows descent to 200 ft above the runway with visibility of at least 550 m.', 'Autoland can land an aircraft in very low visibility with certified systems.', 'A pilot flying an instrument approach cross-checks several instruments continuously.'] },
+    { id: 7, t: 'Inside the Aircraft', tag: 'How flying machines work.', w: 'engineering', shape: 'airliner2',
+      intro: 'Flight comes down to four forces and a handful of clever systems. Try the diagrams below.',
+      films: [V('Demo_of_Active_Resonators_on_the_Active_Noise_Control_Fan_(GRC-2018-CM-0135).webm', 'Active noise control fan demo', 'NASA Glenn research on reducing fan noise.', 'NASA via Wikimedia Commons'), V('%22Miniature_Aces%22_NASA%27s_Dale_Reed_Flight_Research_Laboratory_(AFRC-2015-10946).webm', 'Miniature Aces: Dale Reed laboratory', 'NASA Armstrong’s flight research with small models.', 'NASA via Wikimedia Commons'),
+        X('Four forces of flight explainer', 'The Smithsonian National Air and Space Museum explains what a force is and the four forces of flight.', 'https://airandspace.si.edu/multimedia-gallery/four-forces-flight-explainer-demo', 'Open Smithsonian', 'Smithsonian National Air and Space Museum'), X('How Things Fly', 'The Smithsonian’s interactive explanations of flight.', 'https://howthingsfly.si.edu/ask-an-explainer/how-does-airplane-stay-aloft-how-can-something-insubstantial-air-support-all-weight', 'Read on Smithsonian', 'Smithsonian')],
+      beats: [{ h: 'How wings generate lift', k: 'Educational', t: 'A wing deflects air downward and creates pressure differences. Both views describe one effect. The wing’s shape and angle of attack decide how much lift it creates.' },
+        { h: 'Control surfaces', k: 'Educational', t: 'Ailerons roll the aircraft, elevators pitch it and the rudder yaws it. Flaps and slats change the wing shape for slow flight.' },
+        { h: 'Systems', k: 'Educational', t: 'Hydraulics, or in some designs electric actuators, move control surfaces and landing gear. Cabin pressurisation uses engine bleed air or electric compressors to keep the cabin at an altitude of about 8,000 ft or lower.' }],
+      facts: ['A modern turbofan moves most of its air around the core, not through it. This bypass air produces much of the thrust and makes it quieter.', 'Landing gear is retracted by hydraulic actuators and held down by locks.', 'Wings are tested to at least 150% of the highest expected load.'] },
+    { id: 8, t: 'The Giants of Commercial Aviation', tag: 'Six aircraft that carry the world.', w: 'compare', shape: 'airliner4',
+      intro: 'Six airliners define modern long-haul and short-haul travel. Compare their dimensions and range using manufacturer figures.',
+      films: [V('AIB_A320neo_F-WNEO_25sep14_LFBO.webm', 'Airbus A320neo flight', 'An A320neo at Toulouse on 25 September 2014, from the file name on Wikimedia Commons.', 'Wikimedia Commons'), V('Royal_Thai_Air_Force_Airbus_A340-500_touch-and-go_at_Phuket_5Oct2016.webm', 'Airbus A340-500 touch-and-go', 'A long-range Airbus four-engine jet at Phuket.', 'Wikimedia Commons')],
+      beats: [{ h: 'Four engines to two', k: 'Verified', t: 'Airliners like the A380 and 747 have four engines. The 777, 787 and A350 do the same job with two, because modern engines are more reliable and efficient.' },
+        { h: 'Fly-by-wire and composites', k: 'Verified', t: 'The A320 introduced digital fly-by-wire to airliners. The 787 and the A350 use large amounts of carbon-fibre composite to save weight.' },
+        { h: 'How airlines use them', k: 'Verified', t: 'Very large aircraft suit busy hub routes. Efficient twin-engine aircraft let airlines fly long routes between smaller cities.' }],
+      facts: ['The 747-8 is the longest airliner at 76.3 m.', 'The A380 has the greatest wingspan at 79.75 m.', 'Capacity depends on how an airline arranges the cabin. Figures here are approximate.'] },
+    { id: 9, t: 'The Invisible World of Air Traffic Control', tag: 'How thousands of aircraft share the sky.', w: 'radar', shape: 'delta',
+      intro: 'Controllers separate aircraft by distance and altitude. The radar below is an original simulation and does not show real traffic.',
+      films: [X('Sources on air traffic control', 'I could not verify a film for this chapter. The radar simulation below is the main material.', 'https://www.faa.gov/', 'Open FAA', 'FAA')],
+      beats: [{ h: 'Who talks to the pilot', k: 'Educational', t: 'Clearance delivery gives the route. Ground control moves aircraft on taxiways. The tower clears takeoffs and landings. Approach and departure control manage aircraft near the airport, and en-route centres handle the rest of the flight.' },
+        { h: 'Separation', k: 'Educational', t: 'Controllers keep aircraft apart horizontally or vertically. Typical minima are about 3 NM close to airports and 5 NM en route with radar, or 1,000 ft vertically, but exact values depend on airspace and equipment.' },
+        { h: 'Flight plans and airspace', k: 'Educational', t: 'A flight plan lists the route, altitude and times. Airspace is divided into classes with different rules for equipment and communication.' }],
+      facts: ['Radar sends out a pulse and measures the echo. Secondary radar asks the aircraft’s transponder for its code and altitude.', 'Hartsfield–Jackson Atlanta has been ranked among the world’s busiest airports by passengers in most recent years.', 'Pilots read back clearances to catch mistakes.'] },
+    { id: 10, t: 'The Future of Aviation', tag: 'What is real, what is being tested, what is only an idea.', w: 'future', shape: 'x59',
+      intro: 'Every technology here is labelled by how mature it is. Status changes quickly, so check recent sources.',
+      films: [V('FA-18_Automated_Aerial_Refueling.ogv', 'F/A-18 automated aerial refuelling', 'NASA research on automated refuelling, an example of autonomous flight technology.', 'NASA via Wikimedia Commons'),
+        X('X-59 quest for quiet supersonic flight', 'A NASA+ video about the X-59.', 'https://plus.nasa.gov/video/x-59-nasas-quest-for-quiet-supersonic-flight/', 'Watch on NASA+', 'NASA'), X('X-59 first flight cockpit video', 'Space.com article with the cockpit video of the X-59’s first flight.', 'https://www.space.com/technology/new-video-takes-you-into-the-cockpit-for-1st-flight-of-nasas-new-x-59-quiet-supersonic-jet', 'Open Space.com', 'Space.com'),
+        X('X-57 Maxwell', 'NASA’s all-electric X-plane project.', 'https://science.nasa.gov/3d-resources/x-57-maxwell', 'Open NASA page', 'NASA')],
+      beats: [{ h: 'Where the industry is heading', k: 'Educational', t: 'The main goals are lower carbon emissions, less noise and lower cost. No single technology will do all of that, and most gains come from small improvements added together.' }],
+      facts: ['Sustainable aviation fuel is approved in blends with conventional jet fuel and already flies on airline services.', 'Battery energy density limits electric aircraft to short routes for now.', 'Hydrogen has high energy per kilogram but needs large tanks.'] }
+  ];
+
+  var ACCS = [
+    { t: 'Tenerife airport disaster, 1977', s: '27 March 1977, Los Rodeos (Tenerife)', what: 'Two Boeing 747s, a KLM and a Pan Am, collided on a fog-covered runway. 583 people died. It remains the deadliest accident in aviation history.', find: 'The KLM captain began the takeoff roll without a takeoff clearance. The Spanish investigation found the Pan Am aircraft was still on the runway.', cf: 'Many aircraft had been diverted to a small airport because of a bomb incident at Las Palmas. There was dense fog, congested ramps and a runway used as a taxiway.', hf: 'Misunderstood radio phrases, a time-pressured captain and a crew reluctant to challenge him.', tech: 'Radio transmissions overlapped, which blocked a key message. There was no ground radar.', imp: 'Strict phraseology, with the word “takeoff” reserved for the clearance itself. Crew resource management training followed.', les: 'Clear language and shared understanding matter as much as machines.' },
+    { t: 'Japan Airlines flight 123, 1985', s: '12 August 1985, Mount Osutaka, Japan', what: 'A Boeing 747SR lost its vertical fin and hydraulics after the rear pressure bulkhead failed. The crew kept flying for about 32 minutes using engine thrust. 520 died and four survived.', find: 'Japan’s accident commission found a faulty repair to the bulkhead after a 1978 tail strike. Fatigue cracks grew until the bulkhead failed.', cf: 'An incomplete repair that was not detected in later inspections.', hf: 'The crew showed outstanding airmanship in handling the damaged aircraft.', tech: 'All four hydraulic systems ran through the damaged tail area.', imp: 'Better repair standards and inspection of structural repairs. Designers reviewed hydraulic routing.', les: 'A single poor repair can stay hidden for years, so records and inspections matter.' },
+    { t: 'United Airlines flight 232, 1989', s: '19 July 1989, Sioux City, Iowa', what: 'The tail engine on a McDonnell Douglas DC-10 broke apart in flight and severed all three hydraulic systems. The crew controlled the aircraft using engine thrust and crash-landed at Sioux City. 112 of 296 on board died, and 184 survived.', find: 'The NTSB found a fatigue crack in the engine’s fan disk, which started at a flaw in the titanium alloy that was missed in manufacture and inspection.', cf: 'A manufacturing defect, and inspection methods that did not find the crack.', hf: 'The crew, and a check airman who was a passenger, used crew resource management to cope with a situation no one had trained for.', tech: 'All hydraulic lines ran close together at the tail.', imp: 'Better inspection of titanium engine parts and the introduction of hydraulic shutoff features in new designs.', les: 'Good teamwork can save many lives, but design should not rely on it.' },
+    { t: 'Air France flight 447, 2009', s: '1 June 2009, Atlantic Ocean', what: 'An Airbus A330 flying from Rio de Janeiro to Paris crashed into the Atlantic. All 228 on board died. The wreckage and recorders were found two years later.', find: 'France’s BEA found that ice crystals blocked the airspeed probes, the autopilot disconnected, and the crew did not recover from a high-altitude stall.', cf: 'Probe icing at high altitude, unreliable speed readings and a night flight in a weather area.', hf: 'Confusion in the cockpit and a lack of manual handling practice at high altitude.', tech: 'The Thales pitot probes were susceptible to ice.', imp: 'Probes were replaced, and airlines added training for stall and upset recovery, and for unreliable airspeed.', les: 'Automation helps, and pilots must stay ready to fly the aircraft by hand.' },
+    { t: 'De Havilland Comet, 1954', s: '10 January and 8 April 1954', what: 'Two Comet airliners broke up in flight within months of each other after the first jet airline service began.', find: 'Investigators tested a fuselage in a water tank and found metal fatigue cracks starting at corners of the windows.', cf: 'Repeated pressurisation cycles and stress at sharp corners.', hf: 'Fatigue was not yet well understood for pressurised jets.', tech: 'Square-cornered windows concentrated stress.', imp: 'Rounded windows, fail-safe structures and fatigue testing became standard.', les: 'Test for what happens after thousands of flights, not only the first.' },
+    { t: 'Aloha Airlines flight 243, 1988', s: '28 April 1988, Maui, Hawaii', what: 'A Boeing 737-200 lost a section of its upper cabin roof at 24,000 ft. The pilots landed safely. One flight attendant died.', find: 'The NTSB found widespread fatigue damage along a lap joint in the fuselage skin, after about 89,000 flight cycles on short hops.', cf: 'Corrosion and fatigue in an aircraft with many pressurisation cycles, and maintenance that did not catch the cracks.', hf: 'Inspections missed the damage across several rows of rivets.', tech: 'Multiple small cracks joined together.', imp: 'It led to the aging aircraft program, with inspection and replacement requirements for older aircraft.', les: 'Age is measured in cycles as well as years.' }
+  ];
+
+  var FACTS = [
+    { q: 'Why do aircraft leave white trails?', a: 'Engine exhaust contains water vapour. At cruise altitude the air is extremely cold, usually below about −40 °C, so the vapour turns into ice crystals. Whether a trail lasts depends on how humid the air is.' },
+    { q: 'Why do airplane wings flex?', a: 'In flight the wings carry the whole weight of the aircraft. A wing that bends absorbs gusts and spreads the load. Certification tests bend wings to at least 150% of the highest load expected in service.' },
+    { q: 'Why are aircraft windows rounded?', a: 'Sharp corners concentrate stress. The 1954 Comet accidents showed that fatigue cracks can start there. Rounded corners spread the stress.' },
+    { q: 'Why do aircraft fly at high altitudes?', a: 'The air is thinner at altitude, so there is less drag and jet engines burn fuel more efficiently. Most airliners cruise between about 31,000 and 42,000 ft, above most weather.' },
+    { q: 'How does cabin pressurization work?', a: 'Compressed air from the engines, or electric compressors on some designs, is pumped into the cabin. A valve lets air out to control pressure. The cabin altitude is kept at about 8,000 ft or lower.' },
+    { q: 'Why do aircraft have different engine sounds?', a: 'Engines differ in size, in how much air bypasses the core and in fan design. High-bypass turbofans are quieter than older turbojets. At high thrust some fans make a rasping buzz-saw sound.' }
+  ];
+
+  var PHOTOS = [
+    { c: 'g1', n: 'Lockheed_SR-71s.jpg', t: 'Two Lockheed SR-71s' }, { c: 'g2', n: 'Concorde_landing_Farnborough_Fitzgerald.jpg', t: 'Concorde landing at Farnborough' },
+    { c: 'g3', n: 'X-15_in_flight.jpg', t: 'North American X-15 in flight' }, { c: 'g4', n: 'Qantas_a380_vh-oqa_takeoff_heathrow_arp.jpg', t: 'Qantas Airbus A380 taking off at Heathrow' },
+    { c: 'g5', n: 'Front_view_of_an_SR-71A.jpg', t: 'Front view of an SR-71A' }, { c: 'g6', n: 'SR-71_Blackbird_afterburn.jpg', t: 'SR-71 with afterburners lit' },
+    { c: 'g7', n: 'X-15A2_NB-52B_3.jpg', t: 'The X-15A-2 under the wing of its B-52 carrier' }
+  ];
+
+  /* ---------- helpers ---------- */
+  function fmt(s) { if (!isFinite(s)) return ''; var m = Math.floor(s / 60), r = Math.round(s % 60); return m + ':' + (r < 10 ? '0' : '') + r; }
+  function Ic(p) {
+    var d = { play: [['polygon', { points: '6 3 20 12 6 21 6 3', fill: 'currentColor' }]], left: [['path', { d: 'm12 19-7-7 7-7' }], ['path', { d: 'M19 12H5' }]], right: [['path', { d: 'M5 12h14' }], ['path', { d: 'm12 5 7 7-7 7' }]], ext: [['path', { d: 'M15 3h6v6' }], ['path', { d: 'M10 14 21 3' }], ['path', { d: 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' }]], x: [['path', { d: 'M18 6 6 18' }], ['path', { d: 'm6 6 12 12' }]] }[p.n];
+    return h('svg', { width: p.s || 18, height: p.s || 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, d.map(function (e, i) { return h(e[0], Object.assign({ key: i }, e[1])); }));
+  }
+  function go(hash) { if (location.hash === '#' + hash) window.dispatchEvent(new Event('hashchange')); else location.hash = hash; }
+  function Tag(p) { return html`<span class=${'tag tg-' + p.k}>${p.k}</span>`; }
+
+  /* ---------- player ---------- */
+  function Theater(p) {
+    var films = p.films, s = useState(0), i = s[0], f = films[i], vr = useRef(null), pr = useRef(null), st = useState(f.file ? 'idle' : 'ext'), status = st[0], dur = useState(0);
+    useEffect(function () { s[1](0); }, [p.cid]);
+    useEffect(function () { st[1](f.file ? 'idle' : 'ext'); dur[1](0); if (pr.current) pr.current.style.width = '0'; }, [i, p.cid]);
+    useEffect(function () { if (status !== 'loading') return; var t = setTimeout(function () { st[1](function (x) { return x === 'loading' ? 'error' : x; }); }, 20000); return function () { clearTimeout(t); }; }, [status]);
+    function start() { var v = vr.current; if (!v) return; st[1]('loading'); var r = v.play(); if (r && r.catch) r.catch(function () { st[1]('idle'); }); }
+    var link = f.file ? f.page : f.url;
+    return html`<div class="theater"><div style=${{ minWidth: 0 }}>
+      <div class="screen">
+        ${f.file ? html`<video key=${p.cid + '-' + i} ref=${vr} src=${f.file} controls=${status === 'ready'} playsinline preload="none" aria-label=${f.title}
+          onLoadedMetadata=${function (e) { dur[1](e.target.duration); }} onPlaying=${function () { st[1]('ready'); }} onCanPlay=${function () { st[1](function (x) { return x === 'loading' ? 'ready' : x; }); }}
+          onTimeUpdate=${function (e) { var v = e.target; if (pr.current && v.duration) pr.current.style.width = (v.currentTime / v.duration * 100) + '%'; }} onEnded=${function () { st[1]('done'); }} onError=${function () { st[1]('error'); }}></video>` : null}
+        ${status === 'idle' || status === 'done' ? html`<div class="over"><div style=${{ display: 'grid', gap: '14px', justifyItems: 'center' }}><button class="bigplay" onClick=${start} aria-label="Play film"><${Ic} n="play" s=${32}/></button><span style=${{ color: 'var(--soft)', fontSize: '13px' }}>The film downloads when you press play.</span></div></div>` : null}
+        ${status === 'loading' ? html`<div class="over" role="status"><div class="spin"></div></div>` : null}
+        ${status === 'error' ? html`<div class="over"><div style=${{ display: 'grid', gap: '14px', justifyItems: 'center', maxWidth: '440px' }}><p style=${{ color: 'var(--soft)' }}>This film could not play on the page. Some browsers cannot play this format, or the host blocked it. It is available at the source.</p><a class="btn pri" href=${link} target="_blank" rel="noopener noreferrer">Watch at the source <${Ic} n="ext" s=${15}/></a></div></div>` : null}
+        ${status === 'ext' ? html`<div class="over"><div style=${{ display: 'grid', gap: '14px', justifyItems: 'center', maxWidth: '460px' }}><span class="tag">External source</span><h3 style=${{ fontSize: '1.4rem' }}>${f.title}</h3><p style=${{ color: 'var(--soft)' }}>${f.desc}</p><a class="btn pri" href=${f.url} target="_blank" rel="noopener noreferrer">${f.label} <${Ic} n="ext" s=${15}/></a></div></div>` : null}
+      </div>
+      <div class="prog" role="progressbar" aria-label="Film progress"><span ref=${pr}></span></div>
+      <div style=${{ display: 'grid', gap: '6px', marginTop: '14px' }}><h3 style=${{ fontSize: '1.4rem', fontWeight: 600 }}>${f.title}</h3><p style=${{ color: 'var(--soft)', maxWidth: '62ch' }}>${f.desc}</p>
+        <p class="note">Source: ${f.who || f.src}${dur[0] ? ' · Duration ' + fmt(dur[0]) : ''}. ${f.file ? html`<a href=${f.page} target="_blank" rel="noopener noreferrer" style=${{ color: 'var(--blue)' }}>File page</a>` : null}</p></div>
+      <div class="vnav"><button class="btn sm" disabled=${i === 0} onClick=${function () { s[1](i - 1); }}><${Ic} n="left" s=${14}/> Previous video</button><button class="btn sm" disabled=${i === films.length - 1} onClick=${function () { s[1](i + 1); }}>Next video <${Ic} n="right" s=${14}/></button></div>
+    </div>
+    <div class="plist"><h4 style=${{ fontSize: '13px', color: 'var(--soft)', fontWeight: 500, letterSpacing: '.06em' }}>${films.length} ${films.length === 1 ? 'source' : 'videos and sources'} in this chapter</h4>
+      ${films.map(function (x, n) { return html`<button class="pi" key=${n} aria-current=${n === i} onClick=${function () { s[1](n); }}><b>${x.title}</b><small>${x.file ? 'Plays here · ' + x.who : 'Opens at the source · ' + x.who}</small></button>`; })}</div></div>`;
+  }
+
+  /* ---------- widgets ---------- */
+  function Timeline() {
+    var T = [[1783, 'First free flight by people in a hot-air balloon, Paris.'], [1853, 'Cayley’s glider carries a person across a valley in Yorkshire.'], [1903, 'The Wright Flyer makes the first sustained, controlled, powered flight.'], [1914, 'First scheduled airline service with a paying passenger, in Florida.'], [1939, 'Heinkel He 178 makes the first jet-powered flight.'], [1952, 'The de Havilland Comet begins jet airline service.'], [1958, 'The Boeing 707 starts transatlantic jet service with Pan Am.'], [1969, 'The Boeing 747 and Concorde make their first flights.'], [1988, 'The Airbus A320 enters service with digital fly-by-wire.'], [2009, 'The composite Boeing 787 Dreamliner makes its first flight.']];
+    var s = useState(2), i = s[0];
+    return html`<div class="panel"><h2>Timeline</h2><div class="tabs">${T.map(function (t, n) { return html`<button class="chip" key=${t[0]} aria-pressed=${n === i} onClick=${function () { s[1](n); }}>${t[0]}</button>`; })}</div>
+      <div><div class="stat">${T[i][0]}</div><p style=${{ color: 'var(--silver)', marginTop: '12px', maxWidth: '56ch' }}>${T[i][1]}</p></div></div>`;
+  }
+  function Evidence() {
+    var D = { 'MH370': { Verified: ['Left Kuala Lumpur 8 March 2014 with 239 people on board', 'Military radar tracked a turn-back', 'Satellite data places the end of flight in the southern Indian Ocean', 'A flaperon on Réunion was confirmed as from MH370'], Theory: ['Deliberate action by someone on board', 'A serious in-flight emergency, such as an electrical fire or loss of cabin pressure'], Speculation: ['Shot down or taken to a hidden airstrip', 'Any claim with no supporting data'] },
+      'Earhart': { Verified: ['Disappeared 2 July 1937 near Howland Island', 'Last radio contacts were heard by USCG Itasca', 'No confirmed wreckage has been found'], Theory: ['Ran out of fuel and crashed at sea near Howland', 'Landed on Nikumaroro and died there (debated, unproven)'], Speculation: ['Captured by Japan', 'Lived under another name'] } };
+    var s = useState('MH370'), k = s[0];
+    return html`<div class="panel"><h2>Sort the evidence</h2><div class="tabs">${Object.keys(D).map(function (x) { return html`<button class="chip" key=${x} aria-pressed=${x === k} onClick=${function () { s[1](x); }}>${x}</button>`; })}</div>
+      <div class="cols3">${['Verified', 'Theory', 'Speculation'].map(function (c) { return html`<div key=${c}><${Tag} k=${c}/><ul>${D[k][c].map(function (t) { return html`<li key=${t}>${t}</li>`; })}</ul></div>`; })}</div>
+      <p class="note">Verified means supported by recorded data or physical evidence. Theory means a hypothesis that fits the data. Speculation means there is no credible support.</p></div>`;
+  }
+  function Legends() {
+    var ids = ['concorde', 'b747', 'sr71', 'u2', 'spitfire', 'a380', 'b787', 'c130', 'an225'], S = useState(null);
+    return html`<div class="panel"><h2>The nine, with specifications</h2><div class="strip">${ids.map(function (id) { var a = AC.filter(function (x) { return x.id === id; })[0]; return html`<${Card} a=${a} key=${id} open=${function () { S[1](a); }}/>`; })}</div>${S[0] ? html`<${Profile} a=${S[0]} close=${function () { S[1](null); }}/>` : null}</div>`;
+  }
+  function Accidents() {
+    var s = useState(0), o = s[0];
+    return html`<div class="panel"><h2>Accident studies</h2><p class="note">Each account covers what happened, what investigators found, and what changed. Sources: official investigation reports (NTSB, BEA, AAIB and national authorities).</p>
+      <div>${ACCS.map(function (a, i) { return html`<div class="acc" key=${i} data-o=${o === i}><button aria-expanded=${o === i} onClick=${function () { s[1](o === i ? -1 : i); }}><div><h3>${a.t}</h3><small style=${{ color: 'var(--soft)' }}>${a.s}</small></div><span class="pl" aria-hidden="true">+</span></button>
+        <div class="body"><div class="kvl"><div><b>What happened</b><p>${a.what}</p></div><div><b>Investigation findings</b><p>${a.find}</p></div><div><b>Contributing factors</b><p>${a.cf}</p></div><div><b>Human factors</b><p>${a.hf}</p></div><div><b>Technical failures</b><p>${a.tech}</p></div><div><b>Safety improvements</b><p>${a.imp}</p></div></div><p class="note"><strong>Lesson learned:</strong> ${a.les}</p></div></div>`; })}</div></div>`;
+  }
+  function Mach() {
+    var m = useState(1), mach = m[0], alt = useState('hi'), a = alt[0], sp = a === 'hi' ? 1062 : 1225;
+    var R = [['Bell X-1', 1.06, 'Piloted rocket plane, 1947'], ['SR-71', 3.3, 'Piloted jet, 1976 record'], ['X-15', 6.72, 'Piloted rocket plane, 1967']], U = [['X-43A', 9.6, 'Unmanned scramjet, 2004']];
+    function B(r, cls) { return html`<div class=${'bar ' + cls} key=${r[0]}><span>${r[0]}</span><div class="t"><i style=${{ width: (r[1] / 10 * 100) + '%' }}></i></div><span>Mach ${r[1]}</span></div>`; }
+    return html`<div class="panel"><h2>Mach calculator</h2><div class="two"><div style=${{ display: 'grid', gap: '14px' }}><label for="mach" style=${{ color: 'var(--soft)', fontSize: '13px' }}>Mach number: ${mach.toFixed(2)}</label><input id="mach" type="range" min="0.5" max="7" step="0.05" value=${mach} onInput=${function (e) { m[1](+e.target.value); }}/>
+        <div class="tabs"><button class="chip" aria-pressed=${a === 'sea'} onClick=${function () { alt[1]('sea'); }}>Sea level</button><button class="chip" aria-pressed=${a === 'hi'} onClick=${function () { alt[1]('hi'); }}>Above 11 km</button></div></div>
+      <div><div class="stat">${Math.round(mach * sp).toLocaleString()} km/h</div><p style=${{ color: 'var(--soft)', marginTop: '8px' }}>Speed of sound used: ${sp.toLocaleString()} km/h. ${mach < 1 ? 'Subsonic.' : mach < 5 ? 'Supersonic.' : 'Hypersonic (Mach 5 and above).'}</p></div></div>
+      <div style=${{ display: 'grid', gap: '10px' }}><h3 style=${{ fontSize: '1rem', fontWeight: 600 }}>Piloted aircraft records</h3>${R.map(function (r) { return B(r, ''); })}<h3 style=${{ fontSize: '1rem', fontWeight: 600, marginTop: '10px' }}>Unmanned experimental vehicle (a separate class)</h3>${U.map(function (r) { return B(r, 'un'); })}</div>
+      <p class="note">The Mach values are rounded. The SR-71 record is 3,529.56 km/h. Altitude matters because the speed of sound falls with temperature.</p></div>`;
+  }
+  function Cockpit() {
+    var lx = useState(0), gx = useState(0), t = useState('PFD'), X = lx[0], Y = gx[0];
+    var G = { PFD: 'Combines attitude, airspeed, altitude, vertical speed and heading on one display.', FMS: 'Holds the flight plan and computes fuel and performance. It sends guidance to the autopilot.', VOR: 'A ground beacon. The receiver shows which radial from the station you are on.', ILS: 'A localizer for left-right guidance and a glideslope, typically 3°, for up-down.', Autopilot: 'Flies selected modes. The crew monitors it and can take over at any time.', ATC: 'Standard phrases and read-backs, so that instructions are heard correctly.', Crosswind: 'Crab into the wind, then align the nose with the runway before touchdown. Some pilots use a wing-low method.' };
+    var msg = (Math.abs(X) < 8 ? 'On the centreline' : X > 0 ? 'The runway centreline is to the right. Correct to the right.' : 'The runway centreline is to the left. Correct to the left.') + ' ' + (Math.abs(Y) < 8 ? 'On the glidepath.' : Y > 0 ? 'You are below the glidepath. Correct upward.' : 'You are above the glidepath. Correct downward.');
+    return html`<div class="panel"><h2>ILS needles</h2><div class="two"><div><svg viewBox="0 0 200 200" style=${{ width: '100%', maxWidth: '320px', display: 'block', margin: '0 auto' }} role="img" aria-label="ILS display">
+        <rect x="6" y="6" width="188" height="188" rx="14" fill="#06101f" stroke="rgba(255,255,255,.2)"/>${[-2, -1, 1, 2].map(function (d) { return h('circle', { key: 'a' + d, cx: 100 + d * 36, cy: 100, r: 4, fill: 'none', stroke: '#9fb0cc' }); })}${[-2, -1, 1, 2].map(function (d) { return h('circle', { key: 'b' + d, cx: 100, cy: 100 + d * 36, r: 4, fill: 'none', stroke: '#9fb0cc' }); })}
+        <rect x="97" y="100" width="6" height="0" fill="none"/><line x1=${100 + X * .72} y1="20" x2=${100 + X * .72} y2="180" stroke="#ff4fd8" stroke-width="3"/><line x1="20" y1=${100 - Y * .72} x2="180" y2=${100 - Y * .72} stroke="#ff4fd8" stroke-width="3"/><path d="M92 100 h16 M100 92 v16" stroke="#fff" stroke-width="2"/></svg></div>
+      <div style=${{ display: 'grid', gap: '12px', alignContent: 'center' }}><label for="loc" style=${{ color: 'var(--soft)', fontSize: '13px' }}>Localizer needle (left to right)</label><input id="loc" type="range" min="-60" max="60" value=${X} onInput=${function (e) { lx[1](+e.target.value); }}/><label for="gs" style=${{ color: 'var(--soft)', fontSize: '13px' }}>Glideslope needle (below to above)</label><input id="gs" type="range" min="-60" max="60" value=${Y} onInput=${function (e) { gx[1](+e.target.value); }}/><p style=${{ color: 'var(--silver)' }}>${msg}</p></div></div>
+      <p class="note">The needles show where the course and glidepath are relative to the aircraft. You fly towards the needle. This is a demonstration, not training.</p>
+      <h2 style=${{ fontSize: '1.3rem' }}>Glossary</h2><div class="tabs">${Object.keys(G).map(function (k) { return html`<button class="chip" key=${k} aria-pressed=${t[0] === k} onClick=${function () { t[1](k); }}>${k}</button>`; })}</div><p style=${{ color: 'var(--silver)', maxWidth: '60ch' }}>${G[t[0]]}</p></div>`;
+  }
+  function Engineering() {
+    var F = useState({ lift: true, weight: true, thrust: true, drag: true }), f = F[0], st = useState(0), s = st[0];
+    var ST = [['Intake', 'Air enters the engine at the front.'], ['Fan', 'The large fan pushes some air into the core and the rest around it. In modern engines the bypass air makes much of the thrust.'], ['Compressor', 'Blades squeeze the air to a much higher pressure.'], ['Combustor', 'Fuel is sprayed in and burned continuously.'], ['Turbine', 'Hot gas spins turbines that drive the fan and compressor.'], ['Nozzle', 'The gas and bypass air leave at speed, pushing the engine forward.']];
+    var xs = [24, 60, 110, 160, 210, 262], ws = [34, 44, 44, 44, 44, 40];
+    function tog(k) { var o = Object.assign({}, f); o[k] = !o[k]; F[1](o); }
+    var arr = function (k, x1, y1, x2, y2, c, label) { return f[k] ? html`<g key=${k}><line x1=${x1} y1=${y1} x2=${x2} y2=${y2} stroke=${c} stroke-width="3" marker-end="url(#ah)"/><text x=${x2} y=${y2 + (y2 > y1 ? 14 : -6)} fill=${c} font-size="11" text-anchor="middle">${label}</text></g>` : null; };
+    return html`<div class="panel"><h2>The four forces</h2><div class="two"><svg viewBox="0 0 300 180" style=${{ width: '100%', maxWidth: '460px' }} role="img" aria-label="Four forces on an aircraft"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#fff"/></marker></defs>
+        <g transform="translate(150 90)"><ellipse rx="70" ry="10" fill="url(#sg)"/><polygon points="-10,-4 -34,-40 -22,-40 6,-4" fill="url(#sg)"/><polygon points="-10,4 -34,40 -22,40 6,4" fill="url(#sg)" opacity=".7"/></g>
+        ${arr('lift', 150, 78, 150, 14, '#5fe0a8', 'Lift')}${arr('weight', 150, 102, 150, 166, '#ff8a9a', 'Weight')}${arr('thrust', 222, 90, 286, 90, '#7fb0ff', 'Thrust')}${arr('drag', 78, 90, 14, 90, '#ffc15c', 'Drag')}</svg>
+      <div style=${{ display: 'grid', gap: '10px', alignContent: 'center' }}><div class="tabs">${['lift', 'weight', 'thrust', 'drag'].map(function (k) { return html`<button class="chip" key=${k} aria-pressed=${f[k]} onClick=${function () { tog(k); }}>${k[0].toUpperCase() + k.slice(1)}</button>`; })}</div><p style=${{ color: 'var(--silver)', maxWidth: '46ch' }}>In steady level flight lift equals weight and thrust equals drag. Change either pair and the aircraft climbs, descends, speeds up or slows.</p></div></div>
+      <h2 style=${{ fontSize: '1.3rem' }}>Inside a turbofan</h2><svg viewBox="0 0 300 100" style=${{ width: '100%', maxWidth: '640px' }} role="img" aria-label="Turbofan stages">${ST.map(function (x, i) { return html`<g key=${i} onClick=${function () { st[1](i); }} style=${{ cursor: 'pointer' }}><rect x=${xs[i] - ws[i] / 2 + 2} y=${i === 1 ? 18 : 28} width=${ws[i]} height=${i === 1 ? 64 : 44} rx="6" fill=${s === i ? '#2f7bff' : '#1c2a4a'} stroke="#7f93b8"/><text x=${xs[i] + 2} y="94" fill="#c5ccd8" font-size="8" text-anchor="middle">${x[0]}</text></g>`; })}</svg>
+      <div class="tabs">${ST.map(function (x, i) { return html`<button class="chip" key=${i} aria-pressed=${s === i} onClick=${function () { st[1](i); }}>${i + 1}. ${x[0]}</button>`; })}</div><p style=${{ color: 'var(--silver)', maxWidth: '56ch' }}>${ST[s][1]}</p></div>`;
+  }
+  var CMP = [['Airbus A380', 72.7, 79.75, 15200, '~525'], ['Boeing 747-8', 76.3, 68.4, 14320, '~410'], ['Boeing 777-300ER', 73.9, 64.8, 13650, '~360'], ['Boeing 787-9', 62.8, 60.1, 14140, '~290'], ['Airbus A350-900', 66.8, 64.75, 15000, '~325'], ['Airbus A320ceo', 37.6, 35.8, 6150, '~150']];
+  function Compare() {
+    var m = useState(1), k = m[0], L = [['Length (m)', 80], ['Wingspan (m)', 80], ['Range (km)', 16000]];
+    return html`<div class="panel"><h2>Compare the giants</h2><div class="tabs">${L.map(function (x, i) { return html`<button class="chip" key=${x[0]} aria-pressed=${k === i + 1} onClick=${function () { m[1](i + 1); }}>${x[0]}</button>`; })}</div>
+      <div style=${{ display: 'grid', gap: '10px' }}>${CMP.map(function (r) { return html`<div class="bar" key=${r[0]}><span>${r[0]}</span><div class="t"><i style=${{ width: (r[k] / L[k - 1][1] * 100) + '%' }}></i></div><span>${r[k].toLocaleString()}</span></div>`; })}</div>
+      <table class="spec"><tbody><tr><th>Aircraft</th><td><strong>Typical seats (approx.)</strong></td></tr>${CMP.map(function (r) { return html`<tr key=${r[0]}><th>${r[0]}</th><td>${r[4]}</td></tr>`; })}</tbody></table>
+      <p class="note">Figures are rounded manufacturer data for common variants. Seat counts depend on the airline’s cabin layout and are approximate. Range varies with load.</p></div>`;
+  }
+  function Radar() {
+    var ref = useRef(null);
+    useEffect(function () {
+      var c = ref.current, x = c.getContext('2d'), size, raf, ang = 0, P = [], last = 0;
+      function rs() { var d = Math.min(devicePixelRatio || 1, 2), w = c.clientWidth; size = w; c.width = w * d; c.height = w * d; x.setTransform(d, 0, 0, d, 0, 0); }
+      for (var i = 0; i < 9; i++) P.push({ a: Math.random() * 6.28, r: .2 + Math.random() * .7, h: Math.random() * 6.28, v: .00006 + Math.random() * .00008, id: 'SIM' + (100 + i * 7) });
+      function draw(t) {
+        var dt = t - last; last = t; var R = size / 2; x.clearRect(0, 0, size, size); x.fillStyle = '#04101f'; x.beginPath(); x.arc(R, R, R, 0, 6.283); x.fill();
+        x.strokeStyle = 'rgba(47,123,255,.3)'; x.lineWidth = 1; for (var k = 1; k <= 4; k++) { x.beginPath(); x.arc(R, R, R * k / 4, 0, 6.283); x.stroke(); } x.beginPath(); x.moveTo(0, R); x.lineTo(size, R); x.moveTo(R, 0); x.lineTo(R, size); x.stroke();
+        if (!reduce) ang += dt * .0016;
+        var g = x.createConicGradient ? x.createConicGradient(ang, R, R) : null; if (g) { g.addColorStop(0, 'rgba(47,123,255,.5)'); g.addColorStop(.1, 'rgba(47,123,255,0)'); g.addColorStop(1, 'rgba(47,123,255,0)'); x.fillStyle = g; x.beginPath(); x.arc(R, R, R, 0, 6.283); x.fill(); }
+        x.strokeStyle = 'rgba(120,180,255,.8)'; x.beginPath(); x.moveTo(R, R); x.lineTo(R + Math.cos(ang) * R, R + Math.sin(ang) * R); x.stroke();
+        P.forEach(function (p) {
+          if (!reduce) { p.a += p.v * dt * Math.cos(p.h) / Math.max(p.r, .2); p.r = Math.min(.95, Math.max(.1, p.r + Math.sin(p.h) * p.v * dt * .5)); }
+          var px = R + Math.cos(p.a) * p.r * R, py = R + Math.sin(p.a) * p.r * R, d = ((ang - p.a) % 6.283 + 6.283) % 6.283, al = Math.max(.25, 1 - d / 6.283);
+          x.fillStyle = 'rgba(160,255,210,' + al + ')'; x.beginPath(); x.arc(px, py, 3, 0, 6.283); x.fill(); x.fillStyle = 'rgba(200,215,240,' + al * .8 + ')'; x.font = '10px Figtree, sans-serif'; x.fillText(p.id, px + 6, py - 4);
+        });
+        raf = requestAnimationFrame(draw);
+      }
+      rs(); raf = requestAnimationFrame(draw); addEventListener('resize', rs); return function () { cancelAnimationFrame(raf); removeEventListener('resize', rs); };
+    }, []);
+    var R = [['Clearance delivery', 'Gives the departure route and code before engine start.'], ['Ground control', 'Directs aircraft and vehicles on taxiways.'], ['Tower', 'Clears takeoffs and landings and watches the runway.'], ['Approach / departure', 'Radar control of aircraft in the airport area.'], ['En-route centre', 'Controls the cruise phase across large regions.']];
+    return html`<div class="panel"><h2>Radar simulation</h2><div class="two"><div class="radar"><canvas ref=${ref} role="img" aria-label="Animated radar screen with simulated aircraft"></canvas></div>
+      <div style=${{ display: 'grid', gap: '12px', alignContent: 'center' }}>${R.map(function (r) { return html`<div key=${r[0]}><strong>${r[0]}</strong><p style=${{ color: 'var(--soft)', fontSize: '14px' }}>${r[1]}</p></div>`; })}</div></div><p class="note">All aircraft on this screen are simulated and labelled SIM. No real traffic is shown.</p></div>`;
+  }
+  function Future() {
+    var L = [['Current', 'Sustainable aviation fuel', 'Approved in blends with conventional jet fuel and used on airline flights. Supply is limited.'], ['Current', 'Certified electric trainers', 'The Pipistrel Velis Electro was certified by EASA in 2020 as a two-seat trainer with short endurance.'], ['Current', 'Emergency autoland', 'Some light aircraft have certified systems that can land the aircraft if the pilot is incapacitated.'],
+      ['Prototype', 'NASA X-59', 'An experimental aircraft that first flew in 2025 to study quieter sonic booms.'], ['Prototype', 'Hydrogen-electric flight tests', 'Small and regional demonstrators have flown. Airliner-size hydrogen aircraft are still at the concept stage.'], ['Prototype', 'Advanced air mobility (eVTOL)', 'Electric air taxis are in flight testing and certification. Check current status before assuming service.'],
+      ['Concept', 'Hydrogen airliners', 'Airbus has shown concepts but has delayed its plans. No airliner is certified.'], ['Concept', 'Hypersonic airliners', 'Studies only. Heating, cost and noise are open problems.'], ['Concept', 'Fully autonomous airliners', 'Not certified. Regulators have not set a path for passenger flights without pilots.']];
+    return html`<div class="panel"><h2>How ready is each technology?</h2><div class="ladder">${L.map(function (r, i) { return html`<div class="lr" key=${i}><div><${Tag} k=${r[0]}/></div><h3>${r[1]}</h3><p>${r[2]}</p></div>`; })}</div><p class="note">Statuses reflect public information I could rely on. They change, so check the manufacturer and regulator for the latest.</p></div>`;
+  }
+  function Widget(p) { var m = { timeline: Timeline, evidence: Evidence, legends: Legends, accidents: Accidents, mach: Mach, cockpit: Cockpit, engineering: Engineering, compare: Compare, radar: Radar, future: Future }[p.w]; return m ? h(m) : null; }
+
+  /* ---------- aircraft explorer ---------- */
+  function Card(p) { var a = p.a; return html`<button class="ac" onClick=${p.open} aria-label=${'Open profile: ' + a.n}><div class="bpbox"><${Plane} k=${a.k}/></div><div class="bd"><h3>${a.n}</h3><small>${a.m} · First flight ${a.f.split(' (')[0]}</small><div class="kv"><span>${a.c[0]}</span></div></div></button>`; }
+  function Profile(p) {
+    var a = p.a;
+    useEffect(function () { document.body.classList.add('lock'); function k(e) { if (e.key === 'Escape') p.close(); } addEventListener('keydown', k); return function () { document.body.classList.remove('lock'); removeEventListener('keydown', k); }; }, []);
+    return html`<div class="modal" role="dialog" aria-modal="true" aria-label=${a.n} onClick=${function (e) { if (e.target === e.currentTarget) p.close(); }}><div class="mbox"><div class="top"><div><div class="eyebrow">${a.c.join(' · ')}</div><h2>${a.n}</h2></div><button class="xbtn" onClick=${p.close}>Close</button></div>
+      <div class="bpbig"><${Plane} k=${a.k}/></div><p style=${{ color: 'var(--silver)', maxWidth: '64ch' }}>${a.p}</p>
+      <table class="spec"><tbody><tr><th>Manufacturer</th><td>${a.m}</td></tr><tr><th>First flight</th><td>${a.f}</td></tr><tr><th>Category</th><td>${a.c.join(', ')}</td></tr><tr><th>Maximum speed</th><td>${a.sp}</td></tr><tr><th>Range</th><td>${a.r}</td></tr><tr><th>Engines</th><td>${a.e}</td></tr></tbody></table>
+      <div><h3 style=${{ fontSize: '1.1rem', marginBottom: '10px' }}>Interesting facts</h3><ul style=${{ margin: 0, paddingLeft: '18px', color: 'var(--soft)', display: 'grid', gap: '8px' }}>${a.facts.map(function (f) { return html`<li key=${f}>${f}</li>`; })}</ul></div>
+      <p class="note">Specifications are rounded values for the variant noted. Illustrations are simplified top views, not photographs.</p></div></div>`;
+  }
+  function Explorer() {
+    var q = useState(''), c = useState('All'), s = useState(null);
+    var L = AC.filter(function (a) { var t = (a.n + ' ' + a.m + ' ' + a.e).toLowerCase(); return (c[0] === 'All' || a.c.indexOf(c[0]) >= 0) && t.indexOf(q[0].toLowerCase()) >= 0; });
+    return html`<section id="aircraft"><div class="wrap"><div class="head reveal"><div class="eyebrow">Aircraft explorer</div><h2 class="h2">Find an aircraft.</h2><p class="lede">${AC.length} aircraft from the Wright Flyer to the X-59. Search by name, maker or engine, or filter by category.</p></div>
+      <div class="ctl reveal"><input class="search" type="search" placeholder="Search aircraft, makers or engines" aria-label="Search aircraft" value=${q[0]} onInput=${function (e) { q[1](e.target.value); }}/>${['All'].concat(CATS).map(function (x) { return html`<button class="chip" key=${x} aria-pressed=${c[0] === x} onClick=${function () { c[1](x); }}>${x}</button>`; })}</div>
+      <div class="grid">${L.length ? L.map(function (a) { return html`<${Card} a=${a} key=${a.id} open=${function () { s[1](a); }}/>`; }) : html`<div class="empty">No aircraft match. Try a different word or choose All.</div>`}</div>
+      ${s[0] ? html`<${Profile} a=${s[0]} close=${function () { s[1](null); }}/>` : null}</div></section>`;
+  }
+
+  /* ---------- home sections ---------- */
+  function Hero() {
+    var words = 'THE SKY IS NOT THE LIMIT.'.split(' ');
+    return html`<header class="hero" id="home"><div class="wrap">
+      <div class="hl"><h1>${words.map(function (w, i) { return html`<span class="w" key=${i}><span class="hw">${w}</span> </span>`; })}</h1><p class="sub hs">Discover the machines, mysteries, people, and moments that changed the history of aviation.</p></div>
+      <div class="porthole" data-par="-30" role="img" aria-label="An airliner climbing and leaving a contrail, seen through a cabin window"><span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span><div class="trail"></div><svg class="jet" viewBox="0 0 200 200" aria-hidden="true"><${Plane} k="airliner2" fill="#fff" stroke="none"/></svg><div class="glare"></div></div>
+      <div class="btns hs"><a class="btn pri" href="#aircraft" onClick=${function (e) { e.preventDefault(); go('aircraft'); }}>Explore aviation</a><a class="btn" href="#documentaries" onClick=${function (e) { e.preventDefault(); go('documentaries'); }}>Watch documentaries</a></div></div>
+      <div class="scrollcue" aria-hidden="true"><span>Scroll</span><i></i></div></header>`;
+  }
+  function Featured() {
+    var items = [[3, 'Seven decades after its first flight, the SR-71 still holds the air-breathing speed record. Watch NASA footage and read the specifications.', 'big', 'spy'], [2, 'Two famous disappearances, with every claim sorted into fact, theory and speculation.', '', 'airliner2'], [4, 'Six accidents, what investigators found, and how aviation changed.', '', 'airliner4']];
+    return html`<section id="featured" style=${{ paddingTop: '60px' }}><div class="wrap"><div class="head reveal"><div class="eyebrow">Featured documentaries</div><h2 class="h2">Start with a story.</h2></div><div class="feat">
+      ${items.map(function (x) { var c = CH[x[0] - 1]; return html`<button class=${'fcard reveal ' + x[2]} key=${x[0]} onClick=${function () { go('chapter-' + c.id); }}><${Plane} k=${x[3]} cls="bp"/><span class="tag">Chapter ${c.id}</span><h3>${c.t}</h3><p>${x[1]}</p></button>`; })}</div></div></section>`;
+  }
+  function Index() {
+    return html`<section id="documentaries"><div class="wrap"><div class="head reveal"><div class="eyebrow">Documentaries</div><h2 class="h2">Ten chapters.<br/>One sky.</h2><p class="lede">Each chapter has its own page with videos or sources, a story in sections, and a hands-on lesson.</p></div>
+      <div>${CH.map(function (c) { var n = c.films.filter(function (f) { return f.file; }).length; return html`<button class="row reveal" key=${c.id} onClick=${function () { go('chapter-' + c.id); }}><span class="n">${String(c.id).padStart(2, '0')}</span><div><h3>${c.t}</h3><p>${c.tag}</p></div><span class="go">${n ? n + ' playable' : 'Sources'} <${Ic} n="right" s=${16}/></span><${Plane} k=${c.shape} cls="fly"/></button>`; })}</div></div></section>`;
+  }
+  function Popular() {
+    var ids = ['concorde', 'sr71', 'a380', 'x15', 'spitfire', 'an225'], S = useState(null);
+    return html`<section id="popular" style=${{ paddingTop: 0 }}><div class="wrap"><div class="head reveal"><div class="eyebrow">Popular aircraft</div><h2 class="h2">Icons of the sky.</h2></div><div class="strip reveal">${ids.map(function (id) { var a = AC.filter(function (x) { return x.id === id; })[0]; return html`<${Card} a=${a} key=${id} open=${function () { S[1](a); }}/>`; })}</div>${S[0] ? html`<${Profile} a=${S[0]} close=${function () { S[1](null); }}/>` : null}</div></section>`;
+  }
+  function Facts() {
+    var o = useState(0);
+    return html`<section id="facts"><div class="wrap"><div class="head reveal"><div class="eyebrow">Aviation facts</div><h2 class="h2">Why does it work that way?</h2></div><div class="facts">${FACTS.map(function (f, i) { return html`<div class="fact reveal" key=${i} data-o=${o[0] === i}><button aria-expanded=${o[0] === i} onClick=${function () { o[1](o[0] === i ? -1 : i); }}><h3>${f.q}</h3><span class="pl" aria-hidden="true">+</span></button><div class="ans"><p>${f.a}</p></div></div>`; })}</div></div></section>`;
+  }
+  function Gallery() {
+    return html`<section id="gallery" style=${{ paddingTop: 0 }}><div class="wrap"><div class="head reveal"><div class="eyebrow">Aviation gallery</div><h2 class="h2">Photographs.</h2><p class="lede">Images are loaded from Wikimedia Commons. Licences and credits differ, so each one links to its file page.</p></div>
+      <div class="gal">${PHOTOS.map(function (p) { return html`<${Photo} p=${p} key=${p.n}/>`; })}</div></div></section>`;
+  }
+  function Photo(p) {
+    var e = useState(false), x = p.p;
+    return html`<figure class=${'ph reveal ' + x.c}>${e[0] ? null : html`<img loading="lazy" decoding="async" alt=${x.t} src=${CM + 'Special:FilePath/' + x.n + '?width=1000'} onError=${function () { e[1](true); }}/>`}${e[0] ? html`<${Plane} k="spy" style=${{ position: 'absolute', inset: '10%', width: '80%', height: '80%', opacity: .3 }}/>` : null}<figcaption><span>${x.t}</span><a href=${CM + 'File:' + x.n} target="_blank" rel="noopener noreferrer">Credit and licence on Wikimedia Commons</a></figcaption></figure>`;
+  }
+  function News() {
+    return html`<section id="news" style=${{ paddingTop: 0 }}><div class="wrap"><div class="head reveal"><div class="eyebrow">News and discoveries</div><h2 class="h2">What is new.</h2><p class="lede">This is a short, hand-checked list and not a live feed.</p></div><div class="news">
+      <details class="nitem reveal" open><summary><h3>NASA’s X-59 makes its first flight</h3><${Tag} k="Verified"/></summary><div class="c"><p>NASA’s X-59 quiet supersonic research aircraft made its first flight on 28 October 2025 from Palmdale, California. The aircraft is designed to produce a softer sonic thump instead of a loud boom, and the data will inform rules on supersonic flight over land.</p><p class="src"><a href="https://plus.nasa.gov/video/x-59-nasas-quest-for-quiet-supersonic-flight/" target="_blank" rel="noopener noreferrer">NASA+ video</a> · <a href="https://www.space.com/technology/new-video-takes-you-into-the-cockpit-for-1st-flight-of-nasas-new-x-59-quiet-supersonic-jet" target="_blank" rel="noopener noreferrer">Space.com cockpit video</a></p></div></details>
+      <details class="nitem reveal"><summary><h3>Where to follow aviation developments</h3><${Tag} k="Educational"/></summary><div class="c"><p>For reliable news, go to the sources: NASA aeronautics, the NTSB and other national investigators, and the manufacturers.</p><p class="src"><a href="https://www.nasa.gov/aeronautics/" target="_blank" rel="noopener noreferrer">NASA Aeronautics</a> · <a href="https://www.ntsb.gov/" target="_blank" rel="noopener noreferrer">NTSB</a> · <a href="https://www.airbus.com/" target="_blank" rel="noopener noreferrer">Airbus</a> · <a href="https://www.boeing.com/" target="_blank" rel="noopener noreferrer">Boeing</a></p></div></details></div></div></section>`;
+  }
+  function About() {
+    return html`<section id="about"><div class="wrap about"><div class="lead reveal">Every aircraft has a story. Every flight has a history. Every journey begins with curiosity.</div><div class="reveal"><p>AEROVERSE is an educational aviation platform about the history, engineering, mysteries, legendary aircraft, accidents, pilots and future of flight. It is built for enthusiasts, students and future pilots.</p><p>Every claim is labelled as verified, theory, speculation or educational, and videos link to their real sources. Accident chapters follow official investigations. Pilot content is educational and is not a replacement for certified training.</p></div></div></section>`;
+  }
+  function Contact() {
+    var f = useState({ name: '', topic: 'Suggest a documentary', msg: '' }), o = useState(''), cp = useState('');
+    function up(k) { return function (e) { var n = Object.assign({}, f[0]); n[k] = e.target.value; f[1](n); }; }
+    function sub(e) { e.preventDefault(); o[1]('Topic: ' + f[0].topic + '\nFrom: ' + (f[0].name || 'Anonymous') + '\n\n' + f[0].msg); cp[1](''); }
+    function copy() { try { navigator.clipboard.writeText(o[0]).then(function () { cp[1]('Copied.'); }, function () { cp[1]('Select the text and copy it.'); }); } catch (x) { cp[1]('Select the text and copy it.'); } }
+    return html`<section id="contact" style=${{ paddingTop: 0 }}><div class="wrap"><div class="head reveal"><div class="eyebrow">Contact</div><h2 class="h2">Suggest a story.</h2><p class="lede">This site has no inbox yet. Write your note here and copy it to send wherever you like, or message us on <a href="https://www.instagram.com/aeroverse1" target="_blank" rel="noopener noreferrer" style=${{ color: 'var(--blue)' }}>Instagram @aeroverse1</a>.</p></div>
+      <form class="cform reveal" onSubmit=${sub}><label for="cn">Your name<input id="cn" value=${f[0].name} onInput=${up('name')} autocomplete="name"/></label><label for="ct">Topic<select id="ct" value=${f[0].topic} onChange=${up('topic')}><option>Suggest a documentary</option><option>Report an error</option><option>Add an aircraft</option><option>General note</option></select></label><label for="cm">Message<textarea id="cm" rows="5" required value=${f[0].msg} onInput=${up('msg')}></textarea></label><div><button class="btn pri" type="submit">Prepare message</button></div>
+        ${o[0] ? html`<div style=${{ display: 'grid', gap: '10px' }}><div class="out">${o[0]}</div><div><button type="button" class="btn sm" onClick=${copy}>Copy message</button> <span style=${{ color: 'var(--soft)', fontSize: '13px' }} role="status">${cp[0]}</span></div></div>` : null}</form></div></section>`;
+  }
+  var IG = 'https://www.instagram.com/aeroverse1';
+  var IGIcon = function () { return h('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, [h('rect', { key: 1, x: 3, y: 3, width: 18, height: 18, rx: 5 }), h('circle', { key: 2, cx: 12, cy: 12, r: 4 }), h('circle', { key: 3, cx: 17.5, cy: 6.5, r: .6, fill: 'currentColor' })]); };
+  var TERMS = [
+    ['1. Accepting these terms', 'By using AEROVERSE you agree to these terms. If you do not agree, please do not use the site.'],
+    ['2. What AEROVERSE is', 'AEROVERSE is an educational aviation site and a portfolio project. It is made for people who enjoy learning about aircraft, flight history and engineering.'],
+    ['3. Not training or safety advice', 'Nothing here replaces certified flight training, official aviation guidance or advice from a qualified professional. Do not rely on this site for flying, maintenance or any safety decision.'],
+    ['4. Accuracy', 'We try to check every fact and to label what is verified, what is theory and what is speculation. Mistakes can still happen, and figures can change. Please check official sources, such as accident investigators and manufacturers, before relying on a detail.'],
+    ['5. Videos, images and other people’s content', 'Videos, photographs and other media belong to their owners and link to their original sources. They are shown for education. We do not claim ownership of them. If you own something shown here and want it credited or removed, contact us on Instagram.'],
+    ['6. Links to other sites', 'Some links lead to sites we do not run. We are not responsible for their content, availability or privacy practices.'],
+    ['7. Our content', 'The design, layout and original text of AEROVERSE belong to its creator. You may share links to the site and quote short parts with credit. Please do not copy the site or pass it off as your own.'],
+    ['8. Using the site', 'Use the site lawfully and fairly. Do not try to break it, overload it or interfere with how others use it.'],
+    ['9. Your information', 'AEROVERSE has no accounts. The contact form does not send what you type anywhere. It only prepares a message on your screen for you to copy.'],
+    ['10. No warranty and limits of liability', 'The site is provided as it is, with no promise that it will be accurate, complete or always available. To the extent the law allows, we are not liable for any loss that comes from using the site.'],
+    ['11. Changes', 'We may update these terms from time to time. The date below shows the latest version, and continuing to use the site means you accept the update.'],
+    ['12. Contact', 'Questions or corrections? Message AEROVERSE on Instagram at @aeroverse1.']
+  ];
+  function Terms(p) {
+    var ref = useRef(null);
+    useEffect(function () {
+      document.body.classList.add('lock'); var prev = document.activeElement; if (ref.current) ref.current.focus();
+      function k(e) { if (e.key === 'Escape') p.close(); } addEventListener('keydown', k);
+      return function () { document.body.classList.remove('lock'); removeEventListener('keydown', k); if (prev && prev.focus) prev.focus(); };
+    }, []);
+    return html`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="terms-title" onClick=${function (e) { if (e.target === e.currentTarget) p.close(); }}><div class="mbox"><div class="top"><div><div class="eyebrow">Legal</div><h2 id="terms-title" tabindex="-1" ref=${ref}>Terms and conditions</h2></div><button class="xbtn" onClick=${p.close}>Close</button></div>
+      <div class="terms"><p style=${{ color: 'var(--soft)' }}>Last updated 7 November 2026.</p>${TERMS.map(function (t) { return html`<div key=${t[0]}><h3>${t[0]}</h3><p>${t[1]}</p></div>`; })}</div>
+      <div><button class="btn pri" onClick=${p.close}>I understand</button></div></div></div>`;
+  }
+  function Footer() {
+    var T = useState(false);
+    return html`<footer><div class="wrap" style=${{ display: 'grid', gap: '30px' }}><div class="fcols"><div><h4>AEROVERSE</h4><p>Beyond the skies.</p></div><div><h4>Explore</h4>${[['home', 'Home'], ['documentaries', 'Documentaries'], ['aircraft', 'Aircraft'], ['facts', 'Aviation facts'], ['about', 'About']].map(function (x) { return html`<button key=${x[0]} onClick=${function () { go(x[0]); }}>${x[1]}</button>`; })}</div>
+      <div><h4>Sources</h4><a href="https://www.nasa.gov/aeronautics/" target="_blank" rel="noopener noreferrer">NASA Aeronautics</a><a href="https://www.ntsb.gov/" target="_blank" rel="noopener noreferrer">NTSB</a><a href="https://bea.aero/" target="_blank" rel="noopener noreferrer">BEA</a><a href="https://www.gov.uk/aaib" target="_blank" rel="noopener noreferrer">UK AAIB</a></div><div><h4>Media</h4><a href="https://commons.wikimedia.org/" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a><a href="https://www.airbus.com/" target="_blank" rel="noopener noreferrer">Airbus</a><a href="https://www.boeing.com/" target="_blank" rel="noopener noreferrer">Boeing</a></div><div><h4>Follow</h4><a class="ig" href=${IG} target="_blank" rel="noopener noreferrer" aria-label="AEROVERSE on Instagram"><${IGIcon}/> @aeroverse1</a></div><div><h4>Legal</h4><button type="button" onClick=${function () { T[1](true); }}>Terms and conditions</button></div></div>
+      <p>© 2026 AEROVERSE. A portfolio project. Educational content only, not a replacement for certified pilot training. Video and images belong to their owners and link to their sources.</p></div>${T[0] ? html`<${Terms} close=${function () { T[1](false); }}/>` : null}</footer>`;
+  }
+
+  /* ---------- chapter page ---------- */
+  function Chapter(p) {
+    var c = CH[p.i], prev = CH[p.i - 1], next = CH[p.i + 1];
+    useEffect(function () { scrollTo({ top: 0, behavior: 'instant' }); if (!reduce && window.gsap) gsap.fromTo('.cin', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: .8, stagger: .1, ease: 'power3.out', clearProps: 'all' }); }, [c.id]);
+    return html`<main class="chp"><div class="wrap">
+      <div class="crumb cin"><button class="btn sm" onClick=${function () { go('documentaries'); }}><${Ic} n="left" s=${14}/> All documentaries</button><div class="pbar" aria-label=${'Chapter ' + c.id + ' of 10'}>${CH.map(function (x) { return html`<i key=${x.id} class=${x.id < c.id ? 'd' : x.id === c.id ? 'n' : ''}></i>`; })}</div></div>
+      <div class="chhead cin"><div class="eyebrow">Chapter ${String(c.id).padStart(2, '0')} of 10</div><h1>${c.t}</h1><p class="lede">${c.intro}</p></div>
+      <div class="cin"><${Theater} films=${c.films} cid=${c.id} key=${c.id}/></div>
+      <div class="beats">${c.beats.map(function (b, i) { return html`<div class="beat" key=${i}><div class="hd"><${Tag} k=${b.k}/><h3>${b.h}</h3></div><p>${b.t}</p></div>`; })}</div>
+      <${Widget} w=${c.w} key=${'w' + c.id}/>
+      <div class="panel"><h2>Related facts</h2><ul style=${{ margin: 0, paddingLeft: '18px', color: 'var(--silver)', display: 'grid', gap: '10px', maxWidth: '70ch' }}>${c.facts.map(function (f) { return html`<li key=${f}>${f}</li>`; })}</ul></div>
+      <div class="vnav" style=${{ justifyContent: 'space-between', marginBottom: '60px' }}>${prev ? html`<button class="btn" onClick=${function () { go('chapter-' + prev.id); }}><${Ic} n="left" s=${14}/> ${prev.t}</button>` : html`<span></span>`}${next ? html`<button class="btn pri" onClick=${function () { go('chapter-' + next.id); }}>Next: ${next.t} <${Ic} n="right" s=${14}/></button>` : html`<button class="btn pri" onClick=${function () { go('documentaries'); }}>Back to all chapters</button>`}</div></div></main>`;
+  }
+
+  /* ---------- app ---------- */
+  function Nav(p) {
+    var o = useState(false), sd = useState(false);
+    useEffect(function () { function s() { sd[1](scrollY > 40); } addEventListener('scroll', s, { passive: true }); s(); return function () { removeEventListener('scroll', s); }; }, []);
+    useEffect(function () { document.body.classList.toggle('lock', o[0]); return function () { document.body.classList.remove('lock'); }; }, [o[0]]);
+    var L = [['home', 'Home'], ['documentaries', 'Documentaries'], ['aircraft', 'Aircraft'], ['facts', 'Aviation facts'], ['about', 'About']];
+    return html`<nav class=${'nav' + ((sd[0] || p.chapter) && !o[0] ? ' solid' : '') + (o[0] ? ' open' : '')} aria-label="Main"><a class="logo" href="#home" onClick=${function (e) { e.preventDefault(); o[1](false); go('home'); }}>AEROVERSE</a><ul>${L.map(function (x) { return html`<li key=${x[0]}><button class="l" onClick=${function () { o[1](false); go(x[0]); }}>${x[1]}</button></li>`; })}</ul><button class="mbtn" aria-expanded=${o[0]} onClick=${function () { o[1](!o[0]); }}>${o[0] ? 'Close' : 'Menu'}</button></nav>`;
+  }
+  function App() {
+    var R = useState(parse), route = R[0];
+    function parse() { var m = /^#chapter-(\d+)$/.exec(location.hash); return m && CH[m[1] - 1] ? +m[1] - 1 : -1; }
+    useEffect(function () {
+      function hc() { var n = parse(); R[1](n); if (n === -1) { var id = location.hash.slice(1) || 'home'; setTimeout(function () { var el = document.getElementById(id); if (el) { var y = el.getBoundingClientRect().top + scrollY - (id === 'home' ? 0 : 60); scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' }); } }, 40); } }
+      addEventListener('hashchange', hc); return function () { removeEventListener('hashchange', hc); };
+    }, []);
+    useEffect(function () {
+      if (route !== -1 || reduce || !window.gsap) return; gsap.registerPlugin(ScrollTrigger);
+      var ctx = gsap.context(function () {
+        gsap.from('.hw', { yPercent: 110, duration: 1, stagger: .07, ease: 'power4.out', delay: .7 });
+        gsap.from('.hs', { opacity: 0, y: 20, duration: .8, stagger: .12, delay: 1.2, ease: 'power3.out' });
+        gsap.from('.porthole', { opacity: 0, scale: .94, duration: 1.1, delay: .7, ease: 'power3.out' });
+        gsap.utils.toArray('.reveal').forEach(function (el) { gsap.from(el, { opacity: 0, y: 36, duration: .9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true } }); });
+        gsap.to('.porthole', { y: -60, ease: 'none', scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom top', scrub: true } });
+      }); return function () { ctx.revert(); };
+    }, [route]);
+    return html`<${React.Fragment}><div class="loader" aria-hidden="true"><b>AEROVERSE</b><i></i></div><${Nav} chapter=${route !== -1}/>
+      ${route === -1 ? html`<main><${Hero}/><${Featured}/><${Index}/><${Popular}/><${Explorer}/><${Facts}/><${Gallery}/><${News}/><${About}/><${Contact}/></main>` : html`<${Chapter} i=${route} key=${route}/>`}<${Footer}/><//>`;
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+})();
+</script>
+
+</body></html>
